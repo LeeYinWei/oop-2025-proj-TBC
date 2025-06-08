@@ -107,7 +107,7 @@ class Tower:
         self.last_attack_time = 0
         self.tower_img = pygame.image.load(tower_img) if tower_img else None
         self.width = self.tower_img.get_width() if self.tower_img else 120
-        self.height = self.tower_img.get_height() if self.tower_img else 400
+        self.height = self.tower_img.get_height() if self.tower_img else 350
         self.is_attacking = False
         self.contact_points = []
 
@@ -274,6 +274,9 @@ screen = pygame.display.set_mode((1000, 600))
 pygame.display.set_caption("貓咪大戰爭：攻擊範圍版")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 24)
+# 載入背景圖片
+background_img = pygame.image.load("background.png")  # 替換為你的背景圖片路徑
+background_img = pygame.transform.scale(background_img, (1000, 600))  # 確保圖片大小與窗口匹配
 # === 遊戲狀態 ===
 status = 0#   狀態：0 = 勝負未定，1 = win, 2 = lose
 
@@ -322,8 +325,8 @@ button_colors = {
 
 cats = []
 enemies = []
-cat_y = 500
-enemy_y = 500
+cat_y = 450
+enemy_y = 450
 
 our_tower = Tower(850, 140, hp=1000, tower_img=None)
 enemy_tower = Tower(20, 140, hp=1000, tower_img=None)
@@ -339,7 +342,9 @@ budget_rate = 30  # 每秒增加的花費
 
 running = True
 while running:
-    screen.fill((255, 255, 255))
+    # 繪製背景圖片
+    screen.blit(background_img, (0, 0))
+    #screen.fill((255, 255, 255))
     current_time = pygame.time.get_ticks()
 
     for event in pygame.event.get():
