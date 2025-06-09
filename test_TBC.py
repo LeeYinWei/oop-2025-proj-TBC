@@ -3,10 +3,44 @@ import platform
 import pygame
 import random
 import sys
+import os
+import importlib.util
+
+# === Load Configs from Folders ===
+def load_config(folder, subfolder, config_name="config"):
+    config_path = os.path.join(folder, subfolder, f"{config_name}.py")
+    if not os.path.exists(config_path):
+        print(f"Config file not found: {config_path}")
+        sys.exit()
+    spec = importlib.util.spec_from_file_location(config_name, config_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.cat_config if folder == "cat_folder" else module.enemy_config
+
+# Load cat and enemy types from folders
+cat_types = {}
+cat_cooldowns = {}
+cat_costs = {}
+for cat_type in ["basic", "speedy", "tank"]:
+    config = load_config("cat_folder", cat_type)
+    cat_types[cat_type] = lambda x, y, cfg=config: Cat(
+        x, y, cfg["hp"], cfg["atk"], cfg["speed"], cfg["color"],
+        cfg["attack_range"], cfg["is_aoe"], cfg["image_path"]
+    )
+    cat_cooldowns[cat_type] = config["cooldown"]
+    cat_costs[cat_type] = config["cost"]
+
+enemy_types = {}
+for enemy_type in ["basic", "fast", "tank"]:
+    config = load_config("enemy_folder", enemy_type)
+    enemy_types[enemy_type] = lambda x, y, cfg=config: Enemy(
+        x, y, cfg["hp"], cfg["atk"], cfg["speed"], cfg["color"],
+        cfg["attack_range"], cfg["is_aoe"], cfg["image_path"]
+    )
 
 # === Classes ===
 class Cat:
-    def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False):
+    def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False, image_path=None):
         self.x = x
         self.y = y
         self.hp = hp
@@ -21,13 +55,24 @@ class Cat:
         self.height = 40
         self.is_attacking = False
         self.contact_points = []
+        self.image = None
+        if image_path:
+            try:
+                self.image = pygame.image.load(image_path)
+                self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            except pygame.error as e:
+                print(f"Cannot load cat image '{image_path}': {e}")
+                self.image = None
 
     def move(self):
         if not self.is_attacking:
             self.x -= self.speed
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
         for pt in self.contact_points:
             pygame.draw.circle(screen, (255, 0, 0), pt, 5)
@@ -46,7 +91,7 @@ class Cat:
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 class Enemy:
-    def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False):
+    def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False, image_path=None):
         self.x = x
         self.y = y
         self.hp = hp
@@ -61,13 +106,24 @@ class Enemy:
         self.height = 40
         self.is_attacking = False
         self.contact_points = []
+        self.image = None
+        if image_path:
+            try:
+                self.image = pygame.image.load(image_path)
+                self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            except pygame.error as e:
+                print(f"Cannot load enemy image '{image_path}': {e}")
+                self.image = None
 
     def move(self):
         if not self.is_attacking:
             self.x += self.speed
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
         for pt in self.contact_points:
             pygame.draw.circle(screen, (255, 0, 0), pt, 5)
@@ -86,20 +142,37 @@ class Enemy:
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 class Tower:
-    def __init__(self, x, y, hp, color):
+    def __init__(self, x, y, hp, color, tower_path="tower/tower1.png", is_enemy=False):
         self.x = x
         self.y = y
         self.hp = hp
         self.max_hp = hp
         self.color = color
         self.last_attack_time = 0
-        self.width = 120
-        self.height = 400
         self.is_attacking = False
         self.contact_points = []
+        self.is_enemy = is_enemy
+        if is_enemy:
+            try:
+                self.image = pygame.image.load(tower_path)
+                orig_width, orig_height = self.image.get_size()
+                aspect_ratio = orig_width / orig_height
+                self.height = 100
+                self.width = int(self.height * aspect_ratio)
+                self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            except pygame.error as e:
+                print(f"Cannot load tower image '{tower_path}': {e}")
+                pygame.quit()
+                sys.exit()
+        else:
+            self.width = 120
+            self.height = 400
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        if self.is_enemy:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
         for pt in self.contact_points:
             pygame.draw.circle(screen, (255, 0, 0), pt, 5)
@@ -107,12 +180,12 @@ class Tower:
     def draw_hp_bar(self, screen):
         bar_width = self.width
         bar_height = 5
-        fill = max(0, self.hp / self.max_hp) * bar_width
+        fill = max(0, self.hp / self.max_hp)
         pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y - 10, bar_width, bar_height))
         pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
 
     def get_rect(self):
-        return pygame.Rect(self.x, self.y, self.width, self.height)
+        return pygame.Rect(int(self.x), int(self.y), self.width, int(self.height))
 
 class Level:
     def __init__(self, name, enemy_types, spawn_interval, total_enemies, enemy_tower_hp):
@@ -133,13 +206,14 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
         enemy.is_attacking = False
         enemy.contact_points = []
     our_tower.contact_points = []
-    enemy_tower.contact_points = []
+    if enemy_tower:  # Check if enemy_tower is not None
+        enemy_tower.contact_points = []
     # Cats attack enemies
     for cat in cats:
         cat_attack_zone = cat.get_attack_zone()
         if cat.is_aoe:
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
-            if cat_attack_zone.colliderect(enemy_tower.get_rect()):
+            if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                 targets.append(enemy_tower)
             if targets and now - cat.last_attack_time > 1000:
                 for tar in targets:
@@ -163,7 +237,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                 cat.is_attacking = False
                 cat.move()
         else:
-            if cat_attack_zone.colliderect(enemy_tower.get_rect()):
+            if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                 tower = enemy_tower
                 if now - cat.last_attack_time > 1000:
                     tower.hp -= cat.atk
@@ -233,7 +307,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                         if now - enemy.last_attack_time > 1000:
                             cat.hp -= enemy.atk
                             enemy.last_attack_time = now
-                            enemy.is_attacking = True
+                            cat.is_attacking = True
                             contact_rect = enemy_attack_zone.clip(cat.get_rect())
                             contact_point = contact_rect.center
                             cat.contact_points.append(contact_point)
@@ -248,7 +322,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
 # === Game Setup ===
 pygame.init()
 screen = pygame.display.set_mode((1000, 600))
-pygame.display.set_caption("貓咪大戰爭：攻擊範圍內")
+pygame.display.set_caption("Battle Cats: Attack Range")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 24)
 end_font = pygame.font.SysFont(None, 96)
@@ -260,35 +334,11 @@ try:
     background_img = pygame.image.load("background/background1.png")
     background_img = pygame.transform.scale(background_img, (1000, 600))
 except pygame.error as e:
-    print(f"無法載入背景圖片 'background/background1.png': {e}")
+    print(f"Cannot load background image 'background/background1.png': {e}")
     pygame.quit()
     sys.exit()
 
 # === Data ===
-cat_types = {
-    "basic": lambda x, y: Cat(x, y, hp=100, atk=10, speed=1, color=(200, 200, 200), attack_range=50, is_aoe=False),
-    "speedy": lambda x, y: Cat(x, y, hp=70, atk=5, speed=2, color=(150, 150, 150), attack_range=30, is_aoe=False),
-    "tank": lambda x, y: Cat(x, y, hp=150, atk=15, speed=0.5, color=(120, 120, 120), attack_range=60, is_aoe=True),
-}
-
-cat_cooldowns = {
-    "basic": 1000,
-    "speedy": 500,
-    "tank": 2000,
-}
-
-cat_costs = {
-    "basic": 100,
-    "speedy": 150,
-    "tank": 300,
-}
-
-enemy_types = {
-    "basic": lambda x, y: Enemy(x, y, hp=100, atk=10, speed=1, color=(255, 100, 100), attack_range=40, is_aoe=False),
-    "fast": lambda x, y: Enemy(x, y, hp=50, atk=5, speed=2, color=(255, 150, 150), attack_range=30, is_aoe=False),
-    "tank": lambda x, y: Enemy(x, y, hp=200, atk=15, speed=0.5, color=(100, 50, 50), attack_range=60, is_aoe=True),
-}
-
 levels = [
     Level("Level 1: Easy", [("basic", 0.8), ("fast", 0.2)], 3000, 10, 1000),
     Level("Level 2: Medium", [("basic", 0.5), ("fast", 0.3), ("tank", 0.2)], 2000, 15, 1500),
@@ -298,7 +348,7 @@ levels = [
 # === Level Selection Screen ===
 def draw_level_selection(screen, levels, selected_level, selected_cats):
     screen.fill(background_color)
-    title = font.render("選擇關卡與貓咪", True, (0, 0, 0))
+    title = font.render("Select Level and Cats", True, (0, 0, 0))
     screen.blit(title, (350, 50))
     
     for i, level in enumerate(levels):
@@ -317,7 +367,7 @@ def draw_level_selection(screen, levels, selected_level, selected_cats):
         pygame.draw.rect(screen, color, rect)
         screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
     
-    screen.blit(font.render("點擊選擇關卡，點擊切換貓咪，按 Enter 開始", True, (0, 0, 0)), (50, 400))
+    screen.blit(font.render("Click to select level, click to toggle cats, press Enter to start", True, (0, 0, 0)), (50, 400))
     return cat_rects
 
 # === Game Loop ===
@@ -384,7 +434,7 @@ async def main():
                             button_rects = {cat_type: pygame.Rect(50 + idx * 150, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     game_state = "playing"
-                    enemy_tower = Tower(20, 140, hp=levels[selected_level].enemy_tower_hp, color=(150, 50, 150))
+                    enemy_tower = Tower(20, 380, hp=levels[selected_level].enemy_tower_hp, color=(150, 50, 150), is_enemy=True)
                     levels[selected_level].enemies_spawned = 0
                     cats = []
                     enemies = []
@@ -431,7 +481,7 @@ async def main():
             update_battle(cats, enemies, our_tower, enemy_tower, current_time)
             
             # Draw budget
-            budget_text = font.render(f"當前金錢: {current_budget}", True, (0, 0, 0))
+            budget_text = font.render(f"Current Money: {current_budget}", True, (0, 0, 0))
             screen.blit(budget_text, (800, 10))
             
             # Draw units
@@ -442,7 +492,8 @@ async def main():
             
             # Draw towers
             our_tower.draw(screen)
-            enemy_tower.draw(screen)
+            if enemy_tower:  # Check if enemy_tower is not None
+                enemy_tower.draw(screen)
             
             # Draw cooldown buttons
             for cat_type, rect in button_rects.items():
@@ -452,7 +503,7 @@ async def main():
                 color = button_colors["normal"] if is_ready else button_colors["cooldown"]
                 pygame.draw.rect(screen, color, rect)
                 name_label_text = f"{cat_type} ({list(cat_key_map.keys())[list(cat_key_map.values()).index(cat_type)] - 48})"
-                cost_label_text = f"花費: {cat_costs[cat_type]}"
+                cost_label_text = f"Cost: {cat_costs[cat_type]}"
                 name_label = font.render(name_label_text, True, (0, 0, 0))
                 cost_label = font.render(cost_label_text, True, (255, 0, 0))
                 screen.blit(name_label, (rect.x + 5, rect.y + 5))
@@ -463,9 +514,9 @@ async def main():
                     pygame.draw.rect(screen, (255, 100, 100), (rect.x, rect.y + rect.height - 5, bar_width, 5))
             
             # Draw instruction text
-            screen.blit(font.render(f"關卡: {current_level.name}", True, (0, 0, 0)), (10, 10))
-            screen.blit(font.render("按 1, 2, 3 生成選擇的貓貓", True, (0, 0, 0)), (10, 30))
-            screen.blit(font.render("紅點表示攻擊接觸點", True, (255, 0, 0)), (10, 50))
+            screen.blit(font.render(f"Level: {current_level.name}", True, (0, 0, 0)), (10, 10))
+            screen.blit(font.render("Press 1, 2, 3 to spawn selected cats", True, (0, 0, 0)), (10, 30))
+            screen.blit(font.render("Red dots indicate attack contact points", True, (255, 0, 0)), (10, 50))
             
             pygame.display.flip()
             
@@ -473,17 +524,17 @@ async def main():
             if our_tower.hp <= 0:
                 status = 2  # lose
                 game_state = "end"
-            elif enemy_tower.hp <= 0 or (current_level.enemies_spawned >= current_level.total_enemies and not enemies):
+            elif enemy_tower and (enemy_tower.hp <= 0 or (current_level.enemies_spawned >= current_level.total_enemies and not enemies)):
                 status = 1  # win
                 game_state = "end"
         
         elif game_state == "end":
             screen.blit(background_img, (0, 0))
             if status == 1:
-                screen.blit(end_font.render("你贏了！", True, (0, 255, 0)), (350, 200))
+                screen.blit(end_font.render("You Win!", True, (0, 255, 0)), (350, 200))
             elif status == 2:
-                screen.blit(end_font.render("你輸了！", True, (255, 0, 0)), (350, 200))
-            screen.blit(font.render("按任意鍵返回關卡選擇", True, (0, 0, 0)), (360, 270))
+                screen.blit(end_font.render("You Lose!", True, (255, 0, 0)), (350, 200))
+            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (360, 270))
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -491,6 +542,7 @@ async def main():
                 elif event.type == pygame.KEYDOWN:
                     game_state = "level_selection"
                     our_tower = Tower(850, 140, hp=1000, color=(100, 100, 255))
+                    enemy_tower = None  # 重置敵方塔
         
         await asyncio.sleep(1.0 / FPS)
 
