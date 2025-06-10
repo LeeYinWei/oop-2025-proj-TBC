@@ -258,7 +258,7 @@ class Tower:
         self.contact_points = []
         self.is_enemy = is_enemy
         self.image = None
-        if is_enemy and tower_path:
+        if tower_path:
             try:
                 self.image = pygame.image.load(tower_path)
                 self.image = pygame.transform.scale(self.image, (self.width, self.height))
@@ -268,7 +268,7 @@ class Tower:
                 sys.exit()
 
     def draw(self, screen):
-        if self.is_enemy and self.image:
+        if self.image:
             screen.blit(self.image, (self.x, self.y))
         else:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
@@ -307,7 +307,7 @@ class Level:
             x=our_tower_config["x"],
             y=our_tower_config["y"],
             hp=our_tower_config["hp"],
-            color=our_tower_config["color"],
+            tower_path=our_tower_config["tower_path"],
             width=our_tower_config["width"],
             height=our_tower_config["height"]
         )

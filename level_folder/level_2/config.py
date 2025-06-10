@@ -9,19 +9,20 @@ level_config = {
     "survival_time": 90,
     "background_path": "background/background1.png",
     "our_tower": {
-        "x": 830,
-        "y": 100,
-        "width": 150,
+        "x": 680,
+        "y": 140,
+        "width": 350,
         "height": 350,
         "hp": 1200,
-        "color": (100, 100, 255)
+        "tower_path": "tower/our_tower.png"
+        #"color": (100, 100, 255)
     },
     "enemy_tower": {
-        "x": 30,
-        "y": 350,
-        "width": 80,
-        "height": 150,
-        "hp": 1500,
-        "tower_path": "tower/tower1.png"
+        "x": -50,
+        "y": 150,
+        "width": 350,
+        "height": 350,
+        "hp": 1000,
+        "tower_path": "tower/enemy_tower.png"
     }
 }
