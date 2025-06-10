@@ -1,12 +1,20 @@
 enemy_config = {
     "hp": 100,
-    "atk": 10,
+    "atk": 1,
     "speed": 2,
     "color": (255, 0, 0),
     "attack_range": 50,
     "is_aoe": False,
-    "image_path": "enemy_folder/basic/image.png",
     "kb_limit": 1,
     "width": 40,
-    "height": 40
+    "height": 40,
+    "windup_duration": 200,
+    "attack_duration": 100,
+    "recovery_duration": 200,
+    "idle_frames": ["enemy_folder/basic/image.png"],
+    "move_frames": [],
+    "windup_frames": [],
+    "attack_frames": [],
+    "recovery_frames": [],
+    "kb_frames": []
 }

@@ -5,8 +5,16 @@ enemy_config = {
     "color": (0, 255, 0),
     "attack_range": 40,
     "is_aoe": False,
-    "image_path": "enemy_folder/fast/image.png",
     "kb_limit": 1,
     "width": 35,
-    "height": 35
+    "height": 35,
+    "windup_duration": 200,
+    "attack_duration": 100,
+    "recovery_duration": 200,
+    "idle_frames": ["enemy_folder/fast/image.png"],
+    "move_frames": [],
+    "windup_frames": [],
+    "attack_frames": [],
+    "recovery_frames": [],
+    "kb_frames": []
 }

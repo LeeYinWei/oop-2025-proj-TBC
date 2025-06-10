@@ -5,10 +5,18 @@ cat_config = {
     "color": (255, 0, 255),
     "attack_range": 60,
     "is_aoe": True,
-    "image_path": "cat_folder/tank/image.png",
     "kb_limit": 2,
     "cooldown": 8000,
     "cost": 200,
     "width": 50,
-    "height": 50
+    "height": 50,
+    "windup_duration": 200,
+    "attack_duration": 100,
+    "recovery_duration": 200,
+    "idle_frames": ["cat_folder/tank/image.png"],
+    "move_frames": [],
+    "windup_frames": [],
+    "attack_frames": [],
+    "recovery_frames": [],
+    "kb_frames": []
 }

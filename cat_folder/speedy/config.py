@@ -5,10 +5,18 @@ cat_config = {
     "color": (0, 255, 255),
     "attack_range": 40,
     "is_aoe": False,
-    "image_path": "cat_folder/speedy/image.png",
     "kb_limit": 1,
     "cooldown": 4000,
     "cost": 120,
     "width": 35,
-    "height": 35
+    "height": 35,
+    "windup_duration": 200,
+    "attack_duration": 100,
+    "recovery_duration": 200,
+    "idle_frames": ["cat_folder/speedy/image.png"],
+    "move_frames": [],
+    "windup_frames": [],
+    "attack_frames": [],
+    "recovery_frames": [],
+    "kb_frames": []
 }

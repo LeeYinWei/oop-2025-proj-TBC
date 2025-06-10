@@ -13,8 +13,8 @@ level_config = {
         "width": 350,
         "height": 350,
         "hp": 1000,
-        "tower_path": "tower/our_tower.png"
-        #"color": (100, 100, 255)
+        "tower_path": "tower/our_tower.png",
+        "color": (100, 100, 255)
     },
     "enemy_tower": {
         "x": -60,
