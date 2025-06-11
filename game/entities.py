@@ -414,9 +414,10 @@ class Tower:
 
     def get_rect(self):
         return pygame.Rect(int(self.x), int(self.y), self.width, int(self.height))
+# ... Previous imports and other classes unchanged ...
 
 class Level:
-    def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path, our_tower_config, enemy_tower_config):
+    def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path, our_tower_config, enemy_tower_config, tower_distance):
         self.name = name
         self.enemy_types = enemy_types
         self.spawn_interval = spawn_interval
@@ -426,7 +427,7 @@ class Level:
         self.background = None
         try:
             self.background = pygame.image.load(background_path)
-            self.background = pygame.transform.scale(self.background, (1000, 600))
+            self.background = pygame.transform.scale(self.background, (1280, 600))
         except pygame.error as e:
             print(f"Cannot load background image '{background_path}': {e}")
             pygame.quit()
@@ -434,34 +435,54 @@ class Level:
         self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in enemy_types}
         self.our_tower_config = our_tower_config
         self.enemy_tower_config = enemy_tower_config
+        self.tower_distance = tower_distance
         self.reset_towers()
 
     def reset_towers(self):
+        SCREEN_WIDTH = 1280
+        CENTER_X = SCREEN_WIDTH / 2
+        our_tower_width = self.our_tower_config["width"]
+        enemy_tower_width = self.enemy_tower_config["width"]
+        tower_distance = self.tower_distance
+
+        # Swap tower positions: our tower on right, enemy tower on left
+        our_tower_center = CENTER_X + tower_distance / 2  # Was CENTER_X - tower_distance / 2
+        enemy_tower_center = CENTER_X - tower_distance / 2  # Was CENTER_X + tower_distance / 2
+        our_tower_x = our_tower_center - our_tower_width / 2
+        enemy_tower_x = enemy_tower_center - enemy_tower_width / 2
+
         self.our_tower = Tower(
-            x=self.our_tower_config["x"],
+            x=our_tower_x,
             y=self.our_tower_config["y"],
             hp=self.our_tower_config["hp"],
             color=self.our_tower_config.get("color", (100, 100, 255)),
             tower_path=self.our_tower_config.get("tower_path"),
-            width=self.our_tower_config["width"],
+            width=our_tower_width,
             height=self.our_tower_config["height"]
         )
         self.enemy_tower = Tower(
-            x=self.enemy_tower_config["x"],
+            x=enemy_tower_x,
             y=self.enemy_tower_config["y"],
             hp=self.enemy_tower_config["hp"],
             tower_path=self.enemy_tower_config["tower_path"],
-            width=self.enemy_tower_config["width"],
+            width=enemy_tower_width,
             height=self.enemy_tower_config["height"],
             is_enemy=True
         )
 
     def check_all_limited_spawned(self):
-        for et in self.enemy_types:
-            key = (et["type"], et.get("variant", "default"))
-            if et["is_limited"] and self.spawned_counts[key] < et["spawn_count"]:
-                return False
+        """Check if all limited enemies have been spawned."""
+        for enemy_type in self.enemy_types:
+            if enemy_type.get("is_limited", False):
+                key = (enemy_type["type"], enemy_type.get("variant", "default"))
+                spawn_count = enemy_type.get("spawn_count", 0)
+                if spawn_count > 0 and self.spawned_counts[key] < spawn_count:
+                    return False
         return True
+
+    # ... Other methods unchanged ...
+
+# ... Configuration loading code unchanged ...
 # Load configurations for cats
 cat_types = {}
 cat_cooldowns = {}
@@ -502,9 +523,7 @@ if os.path.exists(enemy_folder):
                     width=cfg["width"], height=cfg["height"],
                     idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
                     windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
-                    recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
-                    windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
-                    recovery_duration=cfg["recovery_duration"]
+                    recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames")
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")
@@ -521,8 +540,14 @@ if os.path.exists(level_folder):
             try:
                 config = load_config(level_folder, level_subfolder)
                 levels.append(Level(
-                    config["name"], config["enemy_types"], config["spawn_interval"], config["survival_time"],
-                    config["background_path"], config["our_tower"], config["enemy_tower"]
+                    config["name"],
+                    config["enemy_types"],
+                    config["spawn_interval"],
+                    config["survival_time"],
+                    config["background_path"],
+                    config["our_tower"],
+                    config["enemy_tower"],
+                    config["tower_distance"]  # Pass tower_distance
                 ))
             except Exception as e:
                 print(f"Error loading level config for '{level_subfolder}': {e}")

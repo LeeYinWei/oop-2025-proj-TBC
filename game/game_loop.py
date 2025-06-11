@@ -86,8 +86,13 @@ async def main_game_loop(screen, clock):
                         current_budget -= cat_costs[cat_key_map[event.key]]
                         cat_type = cat_key_map[event.key]
                         if current_time - last_spawn_time[cat_type] >= cat_cooldowns[cat_type]:
-                            start_x = 1000 - 100
-                            cats.append(cat_types[cat_type](start_x, cat_y))
+                            # Calculate our tower center
+                            our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
+                            # Spawn cat, then adjust x to center it
+                            cat = cat_types[cat_type](our_tower_center, cat_y)
+                            start_x = our_tower_center - cat.width / 2
+                            cat.x = start_x
+                            cats.append(cat)
                             last_spawn_time[cat_type] = current_time
             if current_time - last_budget_increase_time >= 333:
                 if current_budget < total_budget_limitation:
@@ -95,11 +100,17 @@ async def main_game_loop(screen, clock):
                     last_budget_increase_time = current_time
             tower_hp_percent = (enemy_tower.hp / enemy_tower.max_hp) * 100 if enemy_tower else 0
             for et in current_level.enemy_types:
-                key = (et["type"], et.get("variant", ""))
-                if (not et["is_limited"] or current_level.spawned_counts[key] < et["spawn_count"]) and tower_hp_percent <= et["tower_hp_percent"]:
-                    interval = et["spawn_interval_1"]
-                    if current_time - current_level.last_spawn_times[key] >= interval:
-                        enemies.append(enemy_types[et["type"]](20, enemy_y, is_b=et["is_boss"]))
+                key = (et["type"], et.get("variant", "default"))
+                if (not et.get("is_limited", False) or current_level.spawned_counts.get(key, 0) < et.get("spawn_count", 0)) and tower_hp_percent <= et.get("tower_hp_percent", 100):
+                    interval = et.get("spawn_interval_1", current_level.spawn_interval)
+                    if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
+                        # Calculate enemy tower center
+                        enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
+                        # Spawn enemy, then adjust x to center it
+                        enemy = enemy_types[et["type"]](enemy_tower_center, enemy_y, is_b=et.get("is_boss", False))
+                        start_x = enemy_tower_center - enemy.width / 2
+                        enemy.x = start_x
+                        enemies.append(enemy)
                         current_level.spawned_counts[key] += 1
                         current_level.last_spawn_times[key] = current_time
             current_level.all_limited_spawned = current_level.check_all_limited_spawned()

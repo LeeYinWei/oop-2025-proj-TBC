@@ -3,7 +3,7 @@ level_config = {
     "enemy_types": [
         {
             "type": "basic",
-            "variant": "version1",  # 唯一標識
+            "variant": "version1",
             "is_boss": False,
             "is_limited": True,
             "spawn_count": 5,
@@ -14,7 +14,7 @@ level_config = {
         },
         {
             "type": "basic",
-            "variant": "version2",  # 唯一標識
+            "variant": "version2",
             "is_boss": True,
             "is_limited": True,
             "spawn_count": 2,
@@ -39,20 +39,19 @@ level_config = {
     "survival_time": 60,
     "background_path": "background/background1.png",
     "our_tower": {
-        "x": 680,
         "y": 140,
         "width": 350,
         "height": 350,
-        "hp": 1000,
+        "hp": 600,
         "tower_path": "tower/our_tower.png",
         "color": (100, 100, 255)
     },
     "enemy_tower": {
-        "x": -60,
         "y": 150,
         "width": 350,
         "height": 350,
-        "hp": 1000,
+        "hp": 600,
         "tower_path": "tower/enemy_tower.png"
-    }
+    },
+    "tower_distance": 800
 }
