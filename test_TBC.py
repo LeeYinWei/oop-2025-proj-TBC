@@ -108,7 +108,7 @@ class Cat:
         self.kb_animation = False
         self.kb_start_x = 0
         self.kb_target_x = 0
-        self.kb_start_y = self.y  # Set initial kb_start_y to current y
+        self.kb_start_y = self.y
         self.kb_progress = 0
         self.kb_duration = 300
         self.kb_start_time = 0
@@ -122,7 +122,7 @@ class Cat:
     def knock_back(self):
         self.kb_animation = True
         self.kb_start_x = self.x
-        self.kb_target_x = self.x + 50  # Move right (backwards)
+        self.kb_target_x = self.x + 50
         self.kb_start_y = self.y
         self.kb_start_time = pygame.time.get_ticks()
         self.kb_progress = 0
@@ -138,7 +138,7 @@ class Cat:
             self.kb_progress = min(elapsed / self.kb_duration, 1.0)
             eased_progress = 1 - (1 - self.kb_progress) ** 2
             self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
-            self.y = self.kb_start_y  # Maintain current y during knockback
+            self.y = self.kb_start_y
             if self.kb_progress < 0.5:
                 self.kb_rotation = 20 * self.kb_progress
             else:
@@ -146,7 +146,7 @@ class Cat:
             if self.kb_progress >= 1.0:
                 self.kb_animation = False
                 self.anim_state = "idle"
-                self.y = BOTTOM_Y - self.height  # Reset to bottom alignment after knockback
+                self.y = BOTTOM_Y - self.height
                 self.kb_rotation = 0
         else:
             if self.anim_state in ["windup", "attacking", "recovery"]:
@@ -278,7 +278,7 @@ class Enemy:
         self.kb_animation = False
         self.kb_start_x = 0
         self.kb_target_x = 0
-        self.kb_start_y = self.y  # Set initial kb_start_y to current y
+        self.kb_start_y = self.y
         self.kb_progress = 0
         self.kb_duration = 300
         self.kb_start_time = 0
@@ -292,7 +292,7 @@ class Enemy:
     def knock_back(self):
         self.kb_animation = True
         self.kb_start_x = self.x
-        self.kb_target_x = self.x - 50  # Move left (backwards)
+        self.kb_target_x = self.x - 50
         self.kb_start_y = self.y
         self.kb_start_time = pygame.time.get_ticks()
         self.kb_progress = 0
@@ -308,7 +308,7 @@ class Enemy:
             self.kb_progress = min(elapsed / self.kb_duration, 1.0)
             eased_progress = 1 - (1 - self.kb_progress) ** 2
             self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
-            self.y = self.kb_start_y  # Maintain current y during knockback
+            self.y = self.kb_start_y
             if self.kb_progress < 0.5:
                 self.kb_rotation = 20 * self.kb_progress
             else:
@@ -316,7 +316,7 @@ class Enemy:
             if self.kb_progress >= 1.0:
                 self.kb_animation = False
                 self.anim_state = "idle"
-                self.y = BOTTOM_Y - self.height  # Reset to bottom alignment after knockback
+                self.y = BOTTOM_Y - self.height
                 self.kb_rotation = 0
         else:
             if self.anim_state in ["windup", "attacking", "recovery"]:
@@ -439,7 +439,8 @@ class Level:
         self.enemy_types = enemy_types
         self.spawn_interval = spawn_interval
         self.survival_time = survival_time
-        self.spawned_counts = {et["type"]: 0 for et in enemy_types}
+        # 使用 (type, variant) 作為鍵
+        self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in enemy_types}
         self.all_limited_spawned = False
         self.background = None
         try:
@@ -449,10 +450,10 @@ class Level:
             print(f"Cannot load background image '{background_path}': {e}")
             pygame.quit()
             sys.exit()
-        # Store tower configurations
+        # 儲存每個敵人配置的 last_spawn_time
+        self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in enemy_types}
         self.our_tower_config = our_tower_config
         self.enemy_tower_config = enemy_tower_config
-        # Initialize towers
         self.reset_towers()
 
     def reset_towers(self):
@@ -478,7 +479,8 @@ class Level:
 
     def check_all_limited_spawned(self):
         for et in self.enemy_types:
-            if et["is_limited"] and self.spawned_counts[et["type"]] < et["spawn_count"]:
+            key = (et["type"], et.get("variant", "default"))
+            if et["is_limited"] and self.spawned_counts[key] < et["spawn_count"]:
                 return False
         return True
 
@@ -533,7 +535,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             old_hp = e.hp
                             e.hp -= cat.atk
                             if e.hp > 0:
-                                thresholds_crossed = int(old_hp / e.kb_threshold) - int(e.hp / e.kb_threshold)  # 修正為 e
+                                thresholds_crossed = int(old_hp / e.kb_threshold) - int(e.hp / e.kb_threshold)
                                 if thresholds_crossed > 0:
                                     e.knock_back()
                             e.last_hp = e.hp
@@ -562,7 +564,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                                 old_hp = enemy.hp
                                 enemy.hp -= cat.atk
                                 if enemy.hp > 0:
-                                    thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)  # 修正為 enemy
+                                    thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
                                         enemy.knock_back()
                                 enemy.last_hp = enemy.hp
@@ -616,7 +618,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             old_hp = c.hp
                             c.hp -= enemy.atk
                             if c.hp > 0:
-                                thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)  # 修正為 c
+                                thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)
                                 if thresholds_crossed > 0:
                                     c.knock_back()
                             c.last_hp = c.hp
@@ -645,7 +647,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                                 old_hp = cat.hp
                                 cat.hp -= enemy.atk
                                 if cat.hp > 0:
-                                    thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)  # 修正為 cat
+                                    thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)
                                     if thresholds_crossed > 0:
                                         cat.knock_back()
                                 cat.last_hp = cat.hp
@@ -686,6 +688,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
 
     cats[:] = [c for c in cats if c.hp > 0]
     enemies[:] = [e for e in enemies if e.hp > 0]
+
 # === Game Setup ===
 pygame.init()
 screen = pygame.display.set_mode((1000, 600))
@@ -729,7 +732,7 @@ async def main():
     our_tower = None
     enemy_tower = None
     last_spawn_time = {cat_type: 0 for cat_type in cat_types}
-    last_enemy_spawn_time = -3000
+    last_enemy_spawn_time = {i: -levels[0].enemy_types[i].get("initial_delay", 0) for i in range(len(levels[0].enemy_types))}
     last_budget_increase_time = -333
     total_budget_limitation = 16500
     current_budget = 1000
@@ -772,16 +775,17 @@ async def main():
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     game_state = "playing"
                     current_level = levels[selected_level]
-                    current_level.reset_towers()  # Reset tower HP
+                    current_level.reset_towers()
                     our_tower = current_level.our_tower
                     enemy_tower = current_level.enemy_tower
                     for et in current_level.enemy_types:
-                        current_level.spawned_counts[et["type"]] = 0
+                        key = (et["type"], et.get("variant", "default"))
+                        current_level.spawned_counts[key] = 0
                     current_level.all_limited_spawned = False
                     cats = []
                     enemies = []
                     current_budget = 1000
-                    last_enemy_spawn_time = -current_level.spawn_interval
+                    last_enemy_spawn_time = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in current_level.enemy_types}
                     last_budget_increase_time = -333
                     last_spawn_time = {cat_type: 0 for cat_type in cat_types}
                     status = 0
@@ -801,25 +805,21 @@ async def main():
                             start_x = 1000 - 100
                             cats.append(cat_types[cat_type](start_x, cat_y))
                             last_spawn_time[cat_type] = current_time
-            if current_time - last_enemy_spawn_time >= current_level.spawn_interval:
-                tower_hp_percent = (enemy_tower.hp / enemy_tower.max_hp) * 100 if enemy_tower else 0
-                eligible_enemies = [
-                    et for et in current_level.enemy_types
-                    if (not et["is_limited"] or current_level.spawned_counts[et["type"]] < et["spawn_count"])
-                    and tower_hp_percent <= et["tower_hp_percent"]
-                ]
-                if eligible_enemies:
-                    weights = [e.get("weight", 1.0) for e in eligible_enemies]
-                    enemy_choice = random.choices(eligible_enemies, weights=weights, k=1)[0]
-                    enemy_type = enemy_choice["type"]
-                    enemies.append(enemy_types[enemy_type](20, enemy_y, is_b=enemy_choice["is_boss"]))
-                    current_level.spawned_counts[enemy_type] += 1
-                    last_enemy_spawn_time = current_time
-                current_level.all_limited_spawned = current_level.check_all_limited_spawned()
             if current_time - last_budget_increase_time >= 333:
                 if current_budget < total_budget_limitation:
                     current_budget = min(current_budget + budget_rate, total_budget_limitation)
                     last_budget_increase_time = current_time
+            # 敵人生成邏輯
+            tower_hp_percent = (enemy_tower.hp / enemy_tower.max_hp) * 100 if enemy_tower else 0
+            for et in current_level.enemy_types:
+                key = (et["type"], et.get("variant", "default"))
+                if (not et["is_limited"] or current_level.spawned_counts[key] < et["spawn_count"]) and tower_hp_percent <= et["tower_hp_percent"]:
+                    interval = et["spawn_interval_1"]
+                    if current_time - current_level.last_spawn_times[key] >= interval:
+                        enemies.append(enemy_types[et["type"]](20, enemy_y, is_b=et["is_boss"]))
+                        current_level.spawned_counts[key] += 1
+                        current_level.last_spawn_times[key] = current_time
+            current_level.all_limited_spawned = current_level.check_all_limited_spawned()
             update_battle(cats, enemies, our_tower, enemy_tower, current_time)
             budget_text = font.render(f"Money: {current_budget}", True, (0, 0, 0))
             screen.blit(budget_text, (800, 10))
