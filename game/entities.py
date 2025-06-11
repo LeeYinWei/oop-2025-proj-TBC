@@ -1,6 +1,6 @@
 import pygame
 import math
-import sys
+import sys, os
 
 from .config_loader import load_config
 
@@ -462,45 +462,70 @@ class Level:
             if et["is_limited"] and self.spawned_counts[key] < et["spawn_count"]:
                 return False
         return True
-
 # Load configurations for cats
 cat_types = {}
 cat_cooldowns = {}
 cat_costs = {}
-for cat_type in ["basic", "speedy", "tank"]:
-    config = load_config("cat_folder", cat_type)
-    cat_types[cat_type] = lambda x, y, cfg=config: Cat(
-        x, y, cfg["hp"], cfg["atk"], cfg["speed"], cfg["color"],
-        cfg["attack_range"], cfg["is_aoe"], cfg["width"], cfg["height"],
-        cfg["kb_limit"], cfg.get("idle_frames"), cfg.get("move_frames"),
-        cfg.get("windup_frames"), cfg.get("attack_frames"), cfg.get("recovery_frames"),
-        cfg.get("kb_frames"), cfg["windup_duration"], cfg["attack_duration"],
-        cfg["recovery_duration"]
-    )
-    cat_cooldowns[cat_type] = config["cooldown"]
-    cat_costs[cat_type] = config["cost"]
+cat_folder = "cat_folder"
+if os.path.exists(cat_folder):
+    for cat_type in os.listdir(cat_folder):
+        if os.path.isdir(os.path.join(cat_folder, cat_type)):
+            try:
+                config = load_config(cat_folder, cat_type)
+                cat_types[cat_type] = lambda x, y, cfg=config: Cat(
+                    x, y, cfg["hp"], cfg["atk"], cfg["speed"], cfg["color"],
+                    cfg["attack_range"], cfg["is_aoe"], cfg["width"], cfg["height"],
+                    cfg["kb_limit"], cfg.get("idle_frames"), cfg.get("move_frames"),
+                    cfg.get("windup_frames"), cfg.get("attack_frames"), cfg.get("recovery_frames"),
+                    cfg.get("kb_frames"), cfg["windup_duration"], cfg["attack_duration"],
+                    cfg["recovery_duration"]
+                )
+                cat_cooldowns[cat_type] = config["cooldown"]
+                cat_costs[cat_type] = config["cost"]
+            except Exception as e:
+                print(f"Error loading cat config for '{cat_type}': {e}")
+else:
+    print(f"Directory '{cat_folder}' not found")
+    sys.exit()
 
 # Load configurations for enemies
 enemy_types = {}
-for enemy_type in ["basic", "fast", "tank"]:
-    config = load_config("enemy_folder", enemy_type)
-    enemy_types[enemy_type] = lambda x, y, is_b, cfg=config: Enemy(
-        x, y, cfg["hp"], cfg["speed"], cfg["color"], cfg["attack_range"], cfg["is_aoe"],
-        is_boss=cfg.get("is_boss", False), is_b=is_b, atk=cfg["atk"], kb_limit=cfg["kb_limit"],
-        width=cfg["width"], height=cfg["height"],
-        idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
-        windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
-        recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
-        windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
-        recovery_duration=cfg["recovery_duration"]
-    )
+enemy_folder = "enemy_folder"
+if os.path.exists(enemy_folder):
+    for enemy_type in os.listdir(enemy_folder):
+        if os.path.isdir(os.path.join(enemy_folder, enemy_type)):
+            try:
+                config = load_config(enemy_folder, enemy_type)
+                enemy_types[enemy_type] = lambda x, y, is_b, cfg=config: Enemy(
+                    x, y, cfg["hp"], cfg["speed"], cfg["color"], cfg["attack_range"], cfg["is_aoe"],
+                    is_boss=cfg.get("is_boss", False), is_b=is_b, atk=cfg["atk"], kb_limit=cfg["kb_limit"],
+                    width=cfg["width"], height=cfg["height"],
+                    idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
+                    windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
+                    recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
+                    windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
+                    recovery_duration=cfg["recovery_duration"]
+                )
+            except Exception as e:
+                print(f"Error loading enemy config for '{enemy_type}': {e}")
+else:
+    print(f"Directory '{enemy_folder}' not found")
+    sys.exit()
 
 # Load configurations for levels
 levels = []
-level_folders = ["level_1", "level_2", "level_3"]
-for level_folder in level_folders:
-    config = load_config("level_folder", level_folder)
-    levels.append(Level(
-        config["name"], config["enemy_types"], config["spawn_interval"], config["survival_time"],
-        config["background_path"], config["our_tower"], config["enemy_tower"]
-    ))
+level_folder = "level_folder"
+if os.path.exists(level_folder):
+    for level_subfolder in os.listdir(level_folder):
+        if os.path.isdir(os.path.join(level_folder, level_subfolder)):
+            try:
+                config = load_config(level_folder, level_subfolder)
+                levels.append(Level(
+                    config["name"], config["enemy_types"], config["spawn_interval"], config["survival_time"],
+                    config["background_path"], config["our_tower"], config["enemy_tower"]
+                ))
+            except Exception as e:
+                print(f"Error loading level config for '{level_subfolder}': {e}")
+else:
+    print(f"Directory '{level_folder}' not found")
+    sys.exit()
