@@ -219,8 +219,9 @@ class Cat:
             rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
             screen.blit(rotated_image, rect.topleft)
         self.draw_hp_bar(screen)
-        for pt in self.contact_points:
-            pygame.draw.circle(screen, (255, 0, 0), pt, 5)
+        # 移除紅色接觸點圓圈
+        # for pt in self.contact_points:
+        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -392,8 +393,9 @@ class Enemy:
         if self.is_boss:
             boss_label = pygame.font.SysFont(None, 20).render("Boss", True, (255, 0, 0))
             screen.blit(boss_label, (self.x, self.y - 20))
-        for pt in self.contact_points:
-            pygame.draw.circle(screen, (255, 0, 0), pt, 5)
+        # 移除紅色接觸點圓圈
+        # for pt in self.contact_points:
+        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -446,8 +448,9 @@ class Tower:
         else:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
-        for pt in self.contact_points:
-            pygame.draw.circle(screen, (255, 0, 0), pt, 5)
+        # 移除紅色接觸點圓圈
+        # for pt in self.contact_points:
+        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
