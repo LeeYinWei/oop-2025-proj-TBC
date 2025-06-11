@@ -1,9 +1,9 @@
 enemy_config = {
     "hp": 100,
-    "atk": 1,
+    "atk": 10,
     "speed": 2,
     "color": (255, 0, 0),
-    "attack_range": 50,
+    "attack_range": 100,
     "is_aoe": False,
     "kb_limit": 1,
     "width": 200,

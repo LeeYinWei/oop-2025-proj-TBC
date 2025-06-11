@@ -48,32 +48,36 @@ class Soul:
         self.width = width
         self.height = height
         self.start_time = pygame.time.get_ticks()
-        self.duration = duration  # 靈魂持續時間 (毫秒)
-        self.alpha = 255  # 初始透明度
+        self.duration = duration
+        self.alpha = 1.0
 
     def update(self):
         current_time = pygame.time.get_ticks()
         elapsed = current_time - self.start_time
         if elapsed >= self.duration:
-            return False  # 結束時返回 False 表示移除
-        # 靈魂向上浮動並逐漸淡出
-        self.y -= 0.5  # 向上移動速度
-        self.alpha = max(0, 255 - (elapsed / self.duration) * 255)  # 淡出效果
+            return False
+        self.y -= 0.5
+        self.alpha = max(0, 1.0 - (elapsed / self.duration))
         return True
 
     def draw(self, screen):
         if self.alpha > 0:
             soul_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-            pygame.draw.circle(soul_surface, (255, 255, 255, int(self.alpha)), (self.width // 2, self.height // 2), self.width // 2)
+            pygame.draw.circle(
+                soul_surface,
+                (255, 255, 255, int(self.alpha * 255)),
+                (self.width // 2, self.height // 2),
+                self.width // 2
+            )
             screen.blit(soul_surface, (self.x - self.width // 2, self.y - self.height // 2))
 
 class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=200):
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
         self.x = x
-        self.y = BOTTOM_Y - height  # Align bottom to BOTTOM_Y
+        self.y = BOTTOM_Y - height
         self.hp = hp
         self.max_hp = hp
         self.atk = atk
@@ -90,7 +94,6 @@ class Cat:
         self.last_attack_time = 0
         self.is_attacking = False
         self.contact_points = []
-        # Animation variables
         self.anim_state = "idle"
         self.anim_progress = 0
         self.anim_frame = 0
@@ -111,7 +114,6 @@ class Cat:
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
             "knockback": 100
         }
-        # Load animation frames
         for state, frames in [
             ("idle", idle_frames), ("moving", move_frames), ("windup", windup_frames),
             ("attacking", attack_frames), ("recovery", recovery_frames), ("knockback", kb_frames)
@@ -124,13 +126,11 @@ class Cat:
                         self.anim_frames[state].append(img)
                     except pygame.error as e:
                         print(f"Cannot load frame '{frame_path}': {e}")
-        # Fallback to rectangle if no frames
         self.fallback_image = None
         if not self.anim_frames["idle"]:
             self.fallback_image = pygame.Surface((self.width, self.height))
             self.fallback_image.fill(color)
             self.anim_frames["idle"] = [self.fallback_image]
-        # Knockback animation variables
         self.kb_animation = False
         self.kb_start_x = 0
         self.kb_target_x = 0
@@ -219,9 +219,6 @@ class Cat:
             rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
             screen.blit(rotated_image, rect.topleft)
         self.draw_hp_bar(screen)
-        # 移除紅色接觸點圓圈
-        # for pt in self.contact_points:
-        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -242,9 +239,9 @@ class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                  move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=200):
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
         self.x = x
-        self.y = BOTTOM_Y - height  # Align bottom to BOTTOM_Y
+        self.y = BOTTOM_Y - height
         self.hp = hp * (2 if is_b else 1)
         self.max_hp = self.hp
         self.atk = atk * (1.5 if is_b else 1)
@@ -262,7 +259,6 @@ class Enemy:
         self.kb_count = 0
         self.kb_threshold = self.max_hp / self.kb_limit if self.kb_limit > 0 else self.max_hp
         self.last_hp = hp
-        # Animation variables
         self.anim_state = "idle"
         self.anim_progress = 0
         self.anim_start_time = 0
@@ -282,7 +278,6 @@ class Enemy:
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
             "knockback": 100
         }
-        # Load animation frames
         for state, frames in [
             ("idle", idle_frames), ("moving", move_frames), ("windup", windup_frames),
             ("attacking", attack_frames), ("recovery", recovery_frames), ("knockback", kb_frames)
@@ -295,13 +290,11 @@ class Enemy:
                         self.anim_frames[state].append(img)
                     except pygame.error as e:
                         print(f"Cannot load frame '{frame_path}': {e}")
-        # Fallback to rectangle if no frames
         self.fallback_image = None
         if not self.anim_frames["idle"]:
             self.fallback_image = pygame.Surface((self.width, self.height))
             self.fallback_image.fill(color)
             self.anim_frames["idle"] = [self.fallback_image]
-        # Knockback animation variables
         self.kb_animation = False
         self.kb_start_x = 0
         self.kb_target_x = 0
@@ -393,9 +386,6 @@ class Enemy:
         if self.is_boss:
             boss_label = pygame.font.SysFont(None, 20).render("Boss", True, (255, 0, 0))
             screen.blit(boss_label, (self.x, self.y - 20))
-        # 移除紅色接觸點圓圈
-        # for pt in self.contact_points:
-        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -448,9 +438,6 @@ class Tower:
         else:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
-        # 移除紅色接觸點圓圈
-        # for pt in self.contact_points:
-        #     pygame.draw.circle(screen, (255, 0, 0), pt, 5)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -468,7 +455,6 @@ class Level:
         self.enemy_types = enemy_types
         self.spawn_interval = spawn_interval
         self.survival_time = survival_time
-        # 使用 (type, variant) 作為鍵
         self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in enemy_types}
         self.all_limited_spawned = False
         self.background = None
@@ -479,14 +465,12 @@ class Level:
             print(f"Cannot load background image '{background_path}': {e}")
             pygame.quit()
             sys.exit()
-        # 儲存每個敵人配置的 last_spawn_time
         self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in enemy_types}
         self.our_tower_config = our_tower_config
         self.enemy_tower_config = enemy_tower_config
         self.reset_towers()
 
     def reset_towers(self):
-        """Reinitialize towers with fresh instances to reset HP."""
         self.our_tower = Tower(
             x=self.our_tower_config["x"],
             y=self.our_tower_config["y"],
@@ -563,8 +547,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                             e = tar
                             old_hp = e.hp
                             e.hp -= cat.atk
-                            if e.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
-                                souls.append(Soul(e.x + e.width // 2, e.y))
                             if e.hp > 0:
                                 thresholds_crossed = int(old_hp / e.kb_threshold) - int(e.hp / e.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -594,8 +576,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
                                 enemy.hp -= cat.atk
-                                if enemy.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
-                                    souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -650,8 +630,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                             c = tar
                             old_hp = c.hp
                             c.hp -= enemy.atk
-                            if c.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
-                                souls.append(Soul(c.x + c.width // 2, c.y))
                             if c.hp > 0:
                                 thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -681,8 +659,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                             if enemy_attack_zone.colliderect(cat.get_rect()):
                                 old_hp = cat.hp
                                 cat.hp -= enemy.atk
-                                if cat.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
-                                    souls.append(Soul(cat.x + cat.width // 2, cat.y))
                                 if cat.hp > 0:
                                     thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -723,8 +699,26 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                 else:
                     enemy.move()
 
-    cats[:] = [c for c in cats if c.hp > 0]
-    enemies[:] = [e for e in enemies if e.hp > 0]
+    # Centralized soul creation for enemy deaths
+    new_enemies = []
+    for enemy in enemies:
+        if enemy.hp > 0:
+            new_enemies.append(enemy)
+        else:
+            souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
+            # Optional debug: print(f"Soul created for enemy at ({enemy.x}, {enemy.y})")
+    enemies[:] = new_enemies
+
+    # Centralized soul creation for cat deaths
+    new_cats = []
+    for cat in cats:
+        if cat.hp > 0:
+            new_cats.append(cat)
+        else:
+            souls.append(Soul(cat.x + cat.width // 2, cat.y))
+            # Optional debug: print(f"Soul created for cat at ({cat.x}, {cat.y})")
+    cats[:] = new_cats
+
     if enemy_tower and enemy_tower.hp <= 0:
         enemy_tower.hp = 0
     if our_tower.hp <= 0:
@@ -768,7 +762,7 @@ async def main():
     selected_cats = list(cat_types.keys())[:2]
     cats = []
     enemies = []
-    souls = []  # 儲存靈魂實例
+    souls = []
     cat_y = 450
     enemy_y = 450
     our_tower = None
@@ -825,8 +819,8 @@ async def main():
                         current_level.spawned_counts[key] = 0
                     current_level.all_limited_spawned = False
                     cats = []
+                    souls = []
                     enemies = []
-                    souls = []  # 重置靈魂列表
                     current_budget = 1000
                     last_enemy_spawn_time = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in current_level.enemy_types}
                     last_budget_increase_time = -333
@@ -852,10 +846,9 @@ async def main():
                 if current_budget < total_budget_limitation:
                     current_budget = min(current_budget + budget_rate, total_budget_limitation)
                     last_budget_increase_time = current_time
-            # 敵人生成邏輯
             tower_hp_percent = (enemy_tower.hp / enemy_tower.max_hp) * 100 if enemy_tower else 0
             for et in current_level.enemy_types:
-                key = (et["type"], et.get("variant", "default"))
+                key = (et["type"], et.get("variant", ""))
                 if (not et["is_limited"] or current_level.spawned_counts[key] < et["spawn_count"]) and tower_hp_percent <= et["tower_hp_percent"]:
                     interval = et["spawn_interval_1"]
                     if current_time - current_level.last_spawn_times[key] >= interval:
@@ -864,7 +857,6 @@ async def main():
                         current_level.last_spawn_times[key] = current_time
             current_level.all_limited_spawned = current_level.check_all_limited_spawned()
             update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls)
-            # 更新並繪製靈魂
             souls[:] = [soul for soul in souls if soul.update()]
             for soul in souls:
                 soul.draw(screen)
@@ -893,8 +885,8 @@ async def main():
                 pygame.draw.rect(screen, color, rect)
                 name_label = font.render(f"{cat_id} ({pygame.key.name(list(cat_key_map.keys())[list(cat_key_map.values()).index(cat_id)])})", True, (0, 0, 0))
                 cost_label = font.render(f"Cost: ${cat_costs[cat_id]}", True, (255, 50, 50))
-                screen.blit(name_label, (rect.x + 5, rect.y + 5))
-                screen.blit(cost_label, (rect.x + 5, rect.y + 25))
+                screen.blit(name_label, (rect.x + 10, rect.y + 5))
+                screen.blit(cost_label, (rect.x + 10, rect.y + 25))
                 if not is_ready:
                     ratio = time_since / cooldown
                     bar_width = rect.width * ratio
@@ -924,7 +916,7 @@ async def main():
             else:
                 text = end_font.render("Defeat!", True, (255, 100, 100))
             screen.blit(text, (350, 250))
-            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (300, 350))
+            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (350, 350))
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
