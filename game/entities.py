@@ -1,0 +1,506 @@
+import pygame
+import math
+import sys
+
+from .config_loader import load_config
+
+# Constants
+BOTTOM_Y = 490
+
+class Soul:
+    def __init__(self, x, y, width=20, height=20, duration=1000):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration
+        self.alpha = 1.0
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - self.start_time
+        if elapsed >= self.duration:
+            return False
+        self.y -= 0.5
+        self.alpha = max(0, 1.0 - (elapsed / self.duration))
+        return True
+
+    def draw(self, screen):
+        if self.alpha > 0:
+            soul_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            pygame.draw.circle(
+                soul_surface,
+                (255, 255, 255, int(self.alpha * 255)),
+                (self.width // 2, self.height // 2),
+                self.width // 2
+            )
+            screen.blit(soul_surface, (self.x - self.width // 2, self.y - self.height // 2))
+
+class Cat:
+    def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
+                 width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
+                 windup_frames=None, attack_frames=None, recovery_frames=None,
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
+        self.x = x
+        self.y = BOTTOM_Y - height
+        self.hp = hp
+        self.max_hp = hp
+        self.atk = atk
+        self.speed = speed
+        self.color = color
+        self.attack_range = attack_range
+        self.is_aoe = is_aoe
+        self.width = width
+        self.height = height
+        self.kb_limit = kb_limit
+        self.kb_count = 0
+        self.kb_threshold = self.max_hp / self.kb_limit if self.kb_limit > 0 else self.max_hp
+        self.last_hp = hp
+        self.last_attack_time = 0
+        self.is_attacking = False
+        self.contact_points = []
+        self.anim_state = "idle"
+        self.anim_progress = 0
+        self.anim_frame = 0
+        self.anim_start_time = 0
+        self.anim_frames = {
+            "idle": [],
+            "moving": [],
+            "windup": [],
+            "attacking": [],
+            "recovery": [],
+            "knockback": []
+        }
+        self.frame_durations = {
+            "idle": 100,
+            "moving": 100,
+            "windup": windup_duration / max(1, len(windup_frames or [])),
+            "attacking": attack_duration / max(1, len(attack_frames or [])),
+            "recovery": recovery_duration / max(1, len(recovery_frames or [])),
+            "knockback": 100
+        }
+        for state, frames in [
+            ("idle", idle_frames), ("moving", move_frames), ("windup", windup_frames),
+            ("attacking", attack_frames), ("recovery", recovery_frames), ("knockback", kb_frames)
+        ]:
+            if frames:
+                for frame_path in frames:
+                    try:
+                        img = pygame.image.load(frame_path)
+                        img = pygame.transform.scale(img, (self.width, self.height))
+                        self.anim_frames[state].append(img)
+                    except pygame.error as e:
+                        print(f"Cannot load frame '{frame_path}': {e}")
+        self.fallback_image = None
+        if not self.anim_frames["idle"]:
+            self.fallback_image = pygame.Surface((self.width, self.height))
+            self.fallback_image.fill(color)
+            self.anim_frames["idle"] = [self.fallback_image]
+        self.kb_animation = False
+        self.kb_start_x = 0
+        self.kb_target_x = 0
+        self.kb_start_y = self.y
+        self.kb_progress = 0
+        self.kb_duration = 300
+        self.kb_start_time = 0
+        self.kb_rotation = 0
+
+    def move(self):
+        if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
+            self.x -= self.speed
+            self.anim_state = "moving"
+
+    def knock_back(self):
+        self.kb_animation = True
+        self.kb_start_x = self.x
+        self.kb_target_x = self.x + 50
+        self.kb_start_y = self.y
+        self.kb_start_time = pygame.time.get_ticks()
+        self.kb_progress = 0
+        self.anim_state = "knockback"
+        self.kb_count += 1
+        if self.kb_count >= self.kb_limit:
+            self.hp = 0
+
+    def update_animation(self):
+        current_time = pygame.time.get_ticks()
+        if self.kb_animation:
+            elapsed = current_time - self.kb_start_time
+            self.kb_progress = min(elapsed / self.kb_duration, 1.0)
+            eased_progress = 1 - (1 - self.kb_progress) ** 2
+            self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
+            self.y = self.kb_start_y
+            if self.kb_progress < 0.5:
+                self.kb_rotation = 20 * self.kb_progress
+            else:
+                self.kb_rotation = 20 * (1 - self.kb_progress)
+            if self.kb_progress >= 1.0:
+                self.kb_animation = False
+                self.anim_state = "idle"
+                self.y = BOTTOM_Y - self.height
+                self.kb_rotation = 0
+        else:
+            if self.anim_state in ["windup", "attacking", "recovery"]:
+                elapsed = current_time - self.anim_start_time
+                state_duration = (
+                    self.frame_durations["windup"] * len(self.anim_frames["windup"]) if self.anim_state == "windup" else
+                    self.frame_durations["attacking"] * len(self.anim_frames["attacking"]) if self.anim_state == "attacking" else
+                    self.frame_durations["recovery"] * len(self.anim_frames["recovery"])
+                )
+                if elapsed >= state_duration:
+                    if self.anim_state == "windup":
+                        self.anim_state = "attacking"
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "attacking":
+                        self.anim_state = "recovery"
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "recovery":
+                        self.anim_state = "idle"
+                        self.anim_start_time = current_time
+                        self.is_attacking = False
+                self.anim_progress = min(elapsed / state_duration, 1.0) if state_duration > 0 else 0
+            elif not self.is_attacking and self.anim_state != "moving":
+                self.anim_state = "idle"
+                self.anim_progress = (current_time / self.frame_durations["idle"]) % 1
+            elif self.anim_state == "moving":
+                self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
+
+    def get_current_frame(self):
+        state = "knockback" if self.kb_animation else self.anim_state
+        frames = self.anim_frames[state]
+        if not frames:
+            frames = self.anim_frames["idle"]
+        frame_count = len(frames)
+        if frame_count == 0:
+            return self.fallback_image
+        frame_index = int(self.anim_progress * frame_count) % frame_count
+        return frames[frame_index]
+
+    def draw(self, screen):
+        self.update_animation()
+        current_frame = self.get_current_frame()
+        if current_frame:
+            rotated_image = pygame.transform.rotate(current_frame, -self.kb_rotation)
+            rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
+            screen.blit(rotated_image, rect.topleft)
+        self.draw_hp_bar(screen)
+
+    def draw_hp_bar(self, screen):
+        bar_width = self.width
+        bar_height = 5
+        fill = max(0, self.hp / self.max_hp) * bar_width
+        pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y - 10, bar_width, bar_height))
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
+
+    def get_attack_zone(self):
+        if self.kb_animation or self.anim_state in ["windup", "recovery"]:
+            return pygame.Rect(0, 0, 0, 0)
+        return pygame.Rect(self.x - self.attack_range, self.y, self.attack_range, self.height)
+
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class Enemy:
+    def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
+                 is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
+                 move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
+        self.x = x
+        self.y = BOTTOM_Y - height
+        self.hp = hp * (2 if is_b else 1)
+        self.max_hp = self.hp
+        self.atk = atk * (1.5 if is_b else 1)
+        self.speed = speed
+        self.color = color
+        self.attack_range = attack_range
+        self.is_aoe = is_aoe
+        self.is_boss = is_boss
+        self.width = width
+        self.height = height
+        self.last_attack_time = 0
+        self.is_attacking = False
+        self.contact_points = []
+        self.kb_limit = kb_limit
+        self.kb_count = 0
+        self.kb_threshold = self.max_hp / self.kb_limit if self.kb_limit > 0 else self.max_hp
+        self.last_hp = hp
+        self.anim_state = "idle"
+        self.anim_progress = 0
+        self.anim_start_time = 0
+        self.anim_frames = {
+            "idle": [],
+            "moving": [],
+            "windup": [],
+            "attacking": [],
+            "recovery": [],
+            "knockback": []
+        }
+        self.frame_durations = {
+            "idle": 100,
+            "moving": 100,
+            "windup": windup_duration / max(1, len(windup_frames or [])),
+            "attacking": attack_duration / max(1, len(attack_frames or [])),
+            "recovery": recovery_duration / max(1, len(recovery_frames or [])),
+            "knockback": 100
+        }
+        for state, frames in [
+            ("idle", idle_frames), ("moving", move_frames), ("windup", windup_frames),
+            ("attacking", attack_frames), ("recovery", recovery_frames), ("knockback", kb_frames)
+        ]:
+            if frames:
+                for frame_path in frames:
+                    try:
+                        img = pygame.image.load(frame_path)
+                        img = pygame.transform.scale(img, (self.width, self.height))
+                        self.anim_frames[state].append(img)
+                    except pygame.error as e:
+                        print(f"Cannot load frame '{frame_path}': {e}")
+        self.fallback_image = None
+        if not self.anim_frames["idle"]:
+            self.fallback_image = pygame.Surface((self.width, self.height))
+            self.fallback_image.fill(color)
+            self.anim_frames["idle"] = [self.fallback_image]
+        self.kb_animation = False
+        self.kb_start_x = 0
+        self.kb_target_x = 0
+        self.kb_start_y = self.y
+        self.kb_progress = 0
+        self.kb_duration = 300
+        self.kb_start_time = 0
+        self.kb_rotation = 0
+
+    def move(self):
+        if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
+            self.x += self.speed
+            self.anim_state = "moving"
+
+    def knock_back(self):
+        self.kb_animation = True
+        self.kb_start_x = self.x
+        self.kb_target_x = self.x - 50
+        self.kb_start_y = self.y
+        self.kb_start_time = pygame.time.get_ticks()
+        self.kb_progress = 0
+        self.anim_state = "knockback"
+        self.kb_count += 1
+        if self.kb_count >= self.kb_limit:
+            self.hp = 0
+
+    def update_animation(self):
+        current_time = pygame.time.get_ticks()
+        if self.kb_animation:
+            elapsed = current_time - self.kb_start_time
+            self.kb_progress = min(elapsed / self.kb_duration, 1.0)
+            eased_progress = 1 - (1 - self.kb_progress) ** 2
+            self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
+            self.y = self.kb_start_y
+            if self.kb_progress < 0.5:
+                self.kb_rotation = 20 * self.kb_progress
+            else:
+                self.kb_rotation = 20 * (1 - self.kb_progress)
+            if self.kb_progress >= 1.0:
+                self.kb_animation = False
+                self.anim_state = "idle"
+                self.y = BOTTOM_Y - self.height
+                self.kb_rotation = 0
+        else:
+            if self.anim_state in ["windup", "attacking", "recovery"]:
+                elapsed = current_time - self.anim_start_time
+                state_duration = (
+                    self.frame_durations["windup"] * len(self.anim_frames["windup"]) if self.anim_state == "windup" else
+                    self.frame_durations["attacking"] * len(self.anim_frames["attacking"]) if self.anim_state == "attacking" else
+                    self.frame_durations["recovery"] * len(self.anim_frames["recovery"])
+                )
+                if elapsed >= state_duration:
+                    if self.anim_state == "windup":
+                        self.anim_state = "attacking"
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "attacking":
+                        self.anim_state = "recovery"
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "recovery":
+                        self.anim_state = "idle"
+                        self.anim_start_time = current_time
+                        self.is_attacking = False
+                self.anim_progress = min(elapsed / state_duration, 1.0) if state_duration > 0 else 0
+            elif not self.is_attacking and self.anim_state != "moving":
+                self.anim_state = "idle"
+                self.anim_progress = (current_time / self.frame_durations["idle"]) % 1
+            elif self.anim_state == "moving":
+                self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
+
+    def get_current_frame(self):
+        state = "knockback" if self.kb_animation else self.anim_state
+        frames = self.anim_frames[state]
+        if not frames:
+            frames = self.anim_frames["idle"]
+        frame_count = len(frames)
+        if frame_count == 0:
+            return self.fallback_image
+        frame_index = int(self.anim_progress * frame_count) % frame_count
+        return frames[frame_index]
+
+    def draw(self, screen):
+        self.update_animation()
+        current_frame = self.get_current_frame()
+        if current_frame:
+            rotated_image = pygame.transform.rotate(current_frame, self.kb_rotation)
+            rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
+            screen.blit(rotated_image, rect.topleft)
+        self.draw_hp_bar(screen)
+        if self.is_boss:
+            boss_label = pygame.font.SysFont(None, 20).render("Boss", True, (255, 0, 0))
+            screen.blit(boss_label, (self.x, self.y - 20))
+
+    def draw_hp_bar(self, screen):
+        bar_width = self.width
+        bar_height = 5
+        fill = max(0, self.hp / self.max_hp) * bar_width
+        pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y - 10, bar_width, bar_height))
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
+
+    def get_attack_zone(self):
+        if self.kb_animation or self.anim_state in ["windup", "recovery"]:
+            return pygame.Rect(0, 0, 0, 0)
+        return pygame.Rect(self.x + self.width, self.y, self.attack_range, self.height)
+
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class Tower:
+    def __init__(self, x, y, hp, color=(100, 100, 255), tower_path=None, width=120, height=400, is_enemy=False):
+        self.x = x
+        self.y = y
+        self.hp = hp
+        self.max_hp = hp
+        self.color = color
+        self.tower_path = tower_path
+        self.width = width
+        self.height = height
+        self.last_attack_time = 0
+        self.is_attacking = False
+        self.contact_points = []
+        self.is_enemy = is_enemy
+        self.image = None
+        if is_enemy and tower_path:
+            try:
+                self.image = pygame.image.load(tower_path)
+                self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            except pygame.error as e:
+                print(f"Cannot load tower image '{tower_path}': {e}")
+                pygame.quit()
+                sys.exit()
+        elif tower_path:
+            try:
+                self.image = pygame.image.load(tower_path)
+                self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            except pygame.error as e:
+                print(f"Cannot load tower image '{tower_path}': {e}")
+
+    def draw(self, screen):
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        self.draw_hp_bar(screen)
+
+    def draw_hp_bar(self, screen):
+        bar_width = self.width
+        bar_height = 5
+        fill = max(0, self.hp / self.max_hp) * bar_width
+        pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y - 10, bar_width, bar_height))
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
+
+    def get_rect(self):
+        return pygame.Rect(int(self.x), int(self.y), self.width, int(self.height))
+
+class Level:
+    def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path, our_tower_config, enemy_tower_config):
+        self.name = name
+        self.enemy_types = enemy_types
+        self.spawn_interval = spawn_interval
+        self.survival_time = survival_time
+        self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in enemy_types}
+        self.all_limited_spawned = False
+        self.background = None
+        try:
+            self.background = pygame.image.load(background_path)
+            self.background = pygame.transform.scale(self.background, (1000, 600))
+        except pygame.error as e:
+            print(f"Cannot load background image '{background_path}': {e}")
+            pygame.quit()
+            sys.exit()
+        self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in enemy_types}
+        self.our_tower_config = our_tower_config
+        self.enemy_tower_config = enemy_tower_config
+        self.reset_towers()
+
+    def reset_towers(self):
+        self.our_tower = Tower(
+            x=self.our_tower_config["x"],
+            y=self.our_tower_config["y"],
+            hp=self.our_tower_config["hp"],
+            color=self.our_tower_config.get("color", (100, 100, 255)),
+            tower_path=self.our_tower_config.get("tower_path"),
+            width=self.our_tower_config["width"],
+            height=self.our_tower_config["height"]
+        )
+        self.enemy_tower = Tower(
+            x=self.enemy_tower_config["x"],
+            y=self.enemy_tower_config["y"],
+            hp=self.enemy_tower_config["hp"],
+            tower_path=self.enemy_tower_config["tower_path"],
+            width=self.enemy_tower_config["width"],
+            height=self.enemy_tower_config["height"],
+            is_enemy=True
+        )
+
+    def check_all_limited_spawned(self):
+        for et in self.enemy_types:
+            key = (et["type"], et.get("variant", "default"))
+            if et["is_limited"] and self.spawned_counts[key] < et["spawn_count"]:
+                return False
+        return True
+
+# Load configurations for cats
+cat_types = {}
+cat_cooldowns = {}
+cat_costs = {}
+for cat_type in ["basic", "speedy", "tank"]:
+    config = load_config("cat_folder", cat_type)
+    cat_types[cat_type] = lambda x, y, cfg=config: Cat(
+        x, y, cfg["hp"], cfg["atk"], cfg["speed"], cfg["color"],
+        cfg["attack_range"], cfg["is_aoe"], cfg["width"], cfg["height"],
+        cfg["kb_limit"], cfg.get("idle_frames"), cfg.get("move_frames"),
+        cfg.get("windup_frames"), cfg.get("attack_frames"), cfg.get("recovery_frames"),
+        cfg.get("kb_frames"), cfg["windup_duration"], cfg["attack_duration"],
+        cfg["recovery_duration"]
+    )
+    cat_cooldowns[cat_type] = config["cooldown"]
+    cat_costs[cat_type] = config["cost"]
+
+# Load configurations for enemies
+enemy_types = {}
+for enemy_type in ["basic", "fast", "tank"]:
+    config = load_config("enemy_folder", enemy_type)
+    enemy_types[enemy_type] = lambda x, y, is_b, cfg=config: Enemy(
+        x, y, cfg["hp"], cfg["speed"], cfg["color"], cfg["attack_range"], cfg["is_aoe"],
+        is_boss=cfg.get("is_boss", False), is_b=is_b, atk=cfg["atk"], kb_limit=cfg["kb_limit"],
+        width=cfg["width"], height=cfg["height"],
+        idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
+        windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
+        recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
+        windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
+        recovery_duration=cfg["recovery_duration"]
+    )
+
+# Load configurations for levels
+levels = []
+level_folders = ["level_1", "level_2", "level_3"]
+for level_folder in level_folders:
+    config = load_config("level_folder", level_folder)
+    levels.append(Level(
+        config["name"], config["enemy_types"], config["spawn_interval"], config["survival_time"],
+        config["background_path"], config["our_tower"], config["enemy_tower"]
+    ))
