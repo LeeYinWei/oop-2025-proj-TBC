@@ -10,7 +10,7 @@ async def main_game_loop(screen, clock):
     end_font = pygame.font.SysFont(None, 96)
     game_state = "level_selection"
     selected_level = 0
-    selected_cats = list(cat_types.keys())[:2]
+    selected_cats = list(cat_types.keys())[:2]  # Start with 2 cats
     cats = []
     enemies = []
     souls = []
@@ -25,12 +25,12 @@ async def main_game_loop(screen, clock):
     budget_rate = 33
     status = 0
     level_start_time = 0
-    cat_key_map = {pygame.K_1: selected_cats[0]} if len(selected_cats) > 0 else {}
-    if len(selected_cats) > 1:
-        cat_key_map[pygame.K_2] = selected_cats[1]
-    if len(selected_cats) > 2:
-        cat_key_map[pygame.K_3] = selected_cats[2]
-    button_rects = {cat_type: pygame.Rect(50 + idx * 150, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
+    # Map keys 1-0 to up to 10 cats
+    cat_key_map = {}
+    for i, cat_type in enumerate(selected_cats[:10]):
+        cat_key_map[pygame.K_1 + i] = cat_type
+    # Initialize buttons for selected cats (120px wide to fit 10)
+    button_rects = {cat_type: pygame.Rect(50 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
 
     while True:
         current_time = pygame.time.get_ticks()
@@ -48,14 +48,14 @@ async def main_game_loop(screen, clock):
                         if rect.collidepoint(pos):
                             if cat_type in selected_cats and len(selected_cats) > 1:
                                 selected_cats.remove(cat_type)
-                            elif len(selected_cats) < 3:
+                            elif len(selected_cats) < 10:  # Changed from < 3 to < 10
                                 selected_cats.append(cat_type)
-                            cat_key_map = {pygame.K_1: selected_cats[0]} if len(selected_cats) > 0 else {}
-                            if len(selected_cats) > 1:
-                                cat_key_map[pygame.K_2] = selected_cats[1]
-                            if len(selected_cats) > 2:
-                                cat_key_map[pygame.K_3] = selected_cats[2]
-                            button_rects = {cat_type: pygame.Rect(50 + idx * 150, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
+                            # Update key mappings for up to 10 cats
+                            cat_key_map = {}
+                            for i, cat_type in enumerate(selected_cats[:10]):
+                                cat_key_map[pygame.K_1 + i] = cat_type
+                            # Update button positions (120px spacing)
+                            button_rects = {cat_type: pygame.Rect(50 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     game_state = "playing"
                     current_level = levels[selected_level]
@@ -86,9 +86,8 @@ async def main_game_loop(screen, clock):
                         current_budget -= cat_costs[cat_key_map[event.key]]
                         cat_type = cat_key_map[event.key]
                         if current_time - last_spawn_time[cat_type] >= cat_cooldowns[cat_type]:
-                            # Calculate our tower center
+                            # Center cat on our tower
                             our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
-                            # Spawn cat, then adjust x to center it
                             cat = cat_types[cat_type](our_tower_center, cat_y)
                             start_x = our_tower_center - cat.width / 2
                             cat.x = start_x
@@ -104,9 +103,8 @@ async def main_game_loop(screen, clock):
                 if (not et.get("is_limited", False) or current_level.spawned_counts.get(key, 0) < et.get("spawn_count", 0)) and tower_hp_percent <= et.get("tower_hp_percent", 100):
                     interval = et.get("spawn_interval_1", current_level.spawn_interval)
                     if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
-                        # Calculate enemy tower center
+                        # Center enemy on enemy tower
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
-                        # Spawn enemy, then adjust x to center it
                         enemy = enemy_types[et["type"]](enemy_tower_center, enemy_y, is_b=et.get("is_boss", False))
                         start_x = enemy_tower_center - enemy.width / 2
                         enemy.x = start_x
