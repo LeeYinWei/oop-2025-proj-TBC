@@ -41,6 +41,32 @@ for cat_type in ["basic", "speedy", "tank"]:
     cat_costs[cat_type] = config["cost"]
 
 # === Classes ===
+class Soul:
+    def __init__(self, x, y, width=20, height=20, duration=1000):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration  # 靈魂持續時間 (毫秒)
+        self.alpha = 255  # 初始透明度
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - self.start_time
+        if elapsed >= self.duration:
+            return False  # 結束時返回 False 表示移除
+        # 靈魂向上浮動並逐漸淡出
+        self.y -= 0.5  # 向上移動速度
+        self.alpha = max(0, 255 - (elapsed / self.duration) * 255)  # 淡出效果
+        return True
+
+    def draw(self, screen):
+        if self.alpha > 0:
+            soul_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            pygame.draw.circle(soul_surface, (255, 255, 255, int(self.alpha)), (self.width // 2, self.height // 2), self.width // 2)
+            screen.blit(soul_surface, (self.x - self.width // 2, self.y - self.height // 2))
+
 class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
@@ -509,7 +535,7 @@ for enemy_type in ["basic", "fast", "tank"]:
     )
 
 # === Battle Logic ===
-def update_battle(cats, enemies, our_tower, enemy_tower, now):
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
     for cat in cats:
         cat.is_attacking = False
         cat.contact_points = []
@@ -534,6 +560,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             e = tar
                             old_hp = e.hp
                             e.hp -= cat.atk
+                            if e.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
+                                souls.append(Soul(e.x + e.width // 2, e.y))
                             if e.hp > 0:
                                 thresholds_crossed = int(old_hp / e.kb_threshold) - int(e.hp / e.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -563,6 +591,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
                                 enemy.hp -= cat.atk
+                                if enemy.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
+                                    souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -617,6 +647,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             c = tar
                             old_hp = c.hp
                             c.hp -= enemy.atk
+                            if c.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
+                                souls.append(Soul(c.x + c.width // 2, c.y))
                             if c.hp > 0:
                                 thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -646,6 +678,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
                             if enemy_attack_zone.colliderect(cat.get_rect()):
                                 old_hp = cat.hp
                                 cat.hp -= enemy.atk
+                                if cat.hp <= 0 and old_hp > 0:  # 死亡時生成靈魂
+                                    souls.append(Soul(cat.x + cat.width // 2, cat.y))
                                 if cat.hp > 0:
                                     thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -688,6 +722,10 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now):
 
     cats[:] = [c for c in cats if c.hp > 0]
     enemies[:] = [e for e in enemies if e.hp > 0]
+    if enemy_tower and enemy_tower.hp <= 0:
+        enemy_tower.hp = 0
+    if our_tower.hp <= 0:
+        our_tower.hp = 0
 
 # === Game Setup ===
 pygame.init()
@@ -727,6 +765,7 @@ async def main():
     selected_cats = list(cat_types.keys())[:2]
     cats = []
     enemies = []
+    souls = []  # 儲存靈魂實例
     cat_y = 450
     enemy_y = 450
     our_tower = None
@@ -784,6 +823,7 @@ async def main():
                     current_level.all_limited_spawned = False
                     cats = []
                     enemies = []
+                    souls = []  # 重置靈魂列表
                     current_budget = 1000
                     last_enemy_spawn_time = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in current_level.enemy_types}
                     last_budget_increase_time = -333
@@ -820,7 +860,11 @@ async def main():
                         current_level.spawned_counts[key] += 1
                         current_level.last_spawn_times[key] = current_time
             current_level.all_limited_spawned = current_level.check_all_limited_spawned()
-            update_battle(cats, enemies, our_tower, enemy_tower, current_time)
+            update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls)
+            # 更新並繪製靈魂
+            souls[:] = [soul for soul in souls if soul.update()]
+            for soul in souls:
+                soul.draw(screen)
             budget_text = font.render(f"Money: {current_budget}", True, (0, 0, 0))
             screen.blit(budget_text, (800, 10))
             if enemy_tower:
