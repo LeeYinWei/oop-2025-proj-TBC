@@ -41,7 +41,8 @@ class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
+                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = hp
@@ -65,16 +66,10 @@ class Cat:
         self.anim_frame = 0
         self.anim_start_time = 0
         self.anim_frames = {
-            "idle": [],
-            "moving": [],
-            "windup": [],
-            "attacking": [],
-            "recovery": [],
-            "knockback": []
+            "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 100,
-            "moving": 100,
+            "idle": 100, "moving": 100,
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -105,6 +100,11 @@ class Cat:
         self.kb_duration = 300
         self.kb_start_time = 0
         self.kb_rotation = 0
+        self.target_attributes = target_attributes if target_attributes is not None else []
+        self.immunities = immunities if immunities is not None else {}
+        self.boosts = boosts if boosts is not None else {}
+        self.status_effects = {}
+        self.status_effects_config = status_effects_config if status_effects_config is not None else {}
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -112,16 +112,17 @@ class Cat:
             self.anim_state = "moving"
 
     def knock_back(self):
-        self.kb_animation = True
-        self.kb_start_x = self.x
-        self.kb_target_x = self.x + 50
-        self.kb_start_y = self.y
-        self.kb_start_time = pygame.time.get_ticks()
-        self.kb_progress = 0
-        self.anim_state = "knockback"
-        self.kb_count += 1
-        if self.kb_count >= self.kb_limit:
-            self.hp = 0
+        if "Knockback Immunity" not in self.immunities.get("self", []):
+            self.kb_animation = True
+            self.kb_start_x = self.x
+            self.kb_target_x = self.x + 50
+            self.kb_start_y = self.y
+            self.kb_start_time = pygame.time.get_ticks()
+            self.kb_progress = 0
+            self.anim_state = "knockback"
+            self.kb_count += 1
+            if self.kb_count >= self.kb_limit:
+                self.hp = 0
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
@@ -201,6 +202,40 @@ class Cat:
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
+    def apply_status_effect(self, effect, duration, chance=0.3, target=None):
+        """應用狀態效果到目標，考慮機率和免疫"""
+        if not target or pygame.time.get_ticks() % 100 < chance * 100:
+            target_attrs = getattr(target, 'attributes', [])
+            for attr in target_attrs:
+                if effect in self.immunities.get(attr, []):
+                    return
+            if target:
+                target.status_effects[effect] = pygame.time.get_ticks() + duration * 1000
+                if effect == "Knockback":
+                    target.knock_back()
+
+    def update_status_effects(self, current_time):
+        """更新自身狀態效果"""
+        to_remove = []
+        for effect, end_time in self.status_effects.items():
+            if current_time >= end_time:
+                to_remove.append(effect)
+            elif effect == "Slow":
+                self.speed *= 0.5
+            elif effect == "Stun":
+                self.anim_state = "idle"
+                self.is_attacking = False
+            elif effect == "Weaken":
+                self.atk *= 0.7
+            elif effect == "Curse":
+                self.hp -= self.max_hp * 0.01
+        for effect in to_remove:
+            del self.status_effects[effect]
+            if effect == "Slow":
+                self.speed /= 0.5
+            elif effect == "Weaken":
+                self.atk /= 0.7
+
 class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
@@ -229,16 +264,10 @@ class Enemy:
         self.anim_progress = 0
         self.anim_start_time = 0
         self.anim_frames = {
-            "idle": [],
-            "moving": [],
-            "windup": [],
-            "attacking": [],
-            "recovery": [],
-            "knockback": []
+            "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 100,
-            "moving": 100,
+            "idle": 100, "moving": 100,
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -269,6 +298,8 @@ class Enemy:
         self.kb_duration = 300
         self.kb_start_time = 0
         self.kb_rotation = 0
+        self.status_effects = {}
+        self.status_effects_config = {}
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -368,6 +399,28 @@ class Enemy:
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
+    def update_status_effects(self, current_time):
+        """更新狀態效果"""
+        to_remove = []
+        for effect, end_time in self.status_effects.items():
+            if current_time >= end_time:
+                to_remove.append(effect)
+            elif effect == "Slow":
+                self.speed *= 0.5
+            elif effect == "Stun":
+                self.anim_state = "idle"
+                self.is_attacking = False
+            elif effect == "Weaken":
+                self.atk *= 0.7
+            elif effect == "Curse":
+                self.hp -= self.max_hp * 0.01
+        for effect in to_remove:
+            del self.status_effects[effect]
+            if effect == "Slow":
+                self.speed /= 0.5
+            elif effect == "Weaken":
+                self.atk /= 0.7
+
 class Tower:
     def __init__(self, x, y, hp, color=(100, 100, 255), tower_path=None, width=120, height=400, is_enemy=False):
         self.x = x
@@ -414,15 +467,23 @@ class Tower:
 
     def get_rect(self):
         return pygame.Rect(int(self.x), int(self.y), self.width, int(self.height))
-# ... Previous imports and other classes unchanged ...
 
 class Level:
     def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path, our_tower_config, enemy_tower_config, tower_distance):
         self.name = name
-        self.enemy_types = enemy_types
+        self.enemy_configs = {et["type"]: load_config("enemy_folder", et["type"]) for et in enemy_types}
+        valid_attributes = {"紅", "黑", "天", "鐵", "異", "惡", "死", "古", "無"}
+        self.enemy_types = []
+        for et in enemy_types:
+            et_copy = et.copy()
+            enemy_type = et_copy["type"]
+            config = self.enemy_configs.get(enemy_type, {})
+            et_copy["attributes"] = config.get("attributes", [])
+            et_copy["attributes"] = list(dict.fromkeys([attr for attr in et_copy["attributes"] if attr in valid_attributes]))
+            self.enemy_types.append(et_copy)
         self.spawn_interval = spawn_interval
         self.survival_time = survival_time
-        self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in enemy_types}
+        self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in self.enemy_types}
         self.all_limited_spawned = False
         self.background = None
         try:
@@ -432,7 +493,7 @@ class Level:
             print(f"Cannot load background image '{background_path}': {e}")
             pygame.quit()
             sys.exit()
-        self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in enemy_types}
+        self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in self.enemy_types}
         self.our_tower_config = our_tower_config
         self.enemy_tower_config = enemy_tower_config
         self.tower_distance = tower_distance
@@ -445,9 +506,8 @@ class Level:
         enemy_tower_width = self.enemy_tower_config["width"]
         tower_distance = self.tower_distance
 
-        # Swap tower positions: our tower on right, enemy tower on left
-        our_tower_center = CENTER_X + tower_distance / 2  # Was CENTER_X - tower_distance / 2
-        enemy_tower_center = CENTER_X - tower_distance / 2  # Was CENTER_X + tower_distance / 2
+        our_tower_center = CENTER_X + tower_distance / 2
+        enemy_tower_center = CENTER_X - tower_distance / 2
         our_tower_x = our_tower_center - our_tower_width / 2
         enemy_tower_x = enemy_tower_center - enemy_tower_width / 2
 
@@ -480,10 +540,7 @@ class Level:
                     return False
         return True
 
-    # ... Other methods unchanged ...
-
-# ... Configuration loading code unchanged ...
-# Load configurations for cats
+# Load configurations for cats (unchanged)
 cat_types = {}
 cat_cooldowns = {}
 cat_costs = {}
@@ -499,7 +556,11 @@ if os.path.exists(cat_folder):
                     cfg["kb_limit"], cfg.get("idle_frames"), cfg.get("move_frames"),
                     cfg.get("windup_frames"), cfg.get("attack_frames"), cfg.get("recovery_frames"),
                     cfg.get("kb_frames"), cfg["windup_duration"], cfg["attack_duration"],
-                    cfg["recovery_duration"]
+                    cfg["recovery_duration"],
+                    target_attributes=cfg.get("target_attributes", []),
+                    immunities=cfg.get("immunities", {}),
+                    boosts=cfg.get("boosts", {}),
+                    status_effects_config=cfg.get("status_effects", {})
                 )
                 cat_cooldowns[cat_type] = config["cooldown"]
                 cat_costs[cat_type] = config["cost"]
@@ -509,7 +570,7 @@ else:
     print(f"Directory '{cat_folder}' not found")
     sys.exit()
 
-# Load configurations for enemies
+# Load configurations for enemies (simplified)
 enemy_types = {}
 enemy_folder = "enemy_folder"
 if os.path.exists(enemy_folder):
@@ -523,7 +584,9 @@ if os.path.exists(enemy_folder):
                     width=cfg["width"], height=cfg["height"],
                     idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
                     windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
-                    recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames")
+                    recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
+                    windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
+                    recovery_duration=cfg["recovery_duration"]
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")
@@ -531,7 +594,7 @@ else:
     print(f"Directory '{enemy_folder}' not found")
     sys.exit()
 
-# Load configurations for levels
+# Load configurations for levels (unchanged)
 levels = []
 level_folder = "level_folder"
 if os.path.exists(level_folder):
@@ -547,7 +610,7 @@ if os.path.exists(level_folder):
                     config["background_path"],
                     config["our_tower"],
                     config["enemy_tower"],
-                    config["tower_distance"]  # Pass tower_distance
+                    config["tower_distance"]
                 ))
             except Exception as e:
                 print(f"Error loading level config for '{level_subfolder}': {e}")

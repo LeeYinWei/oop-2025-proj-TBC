@@ -48,7 +48,7 @@ async def main_game_loop(screen, clock):
                         if rect.collidepoint(pos):
                             if cat_type in selected_cats and len(selected_cats) > 1:
                                 selected_cats.remove(cat_type)
-                            elif len(selected_cats) < 10:  # Changed from < 3 to < 10
+                            elif len(selected_cats) < 10:
                                 selected_cats.append(cat_type)
                             # Update key mappings for up to 10 cats
                             cat_key_map = {}
@@ -105,13 +105,21 @@ async def main_game_loop(screen, clock):
                     if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
                         # Center enemy on enemy tower
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
-                        enemy = enemy_types[et["type"]](enemy_tower_center, enemy_y, is_b=et.get("is_boss", False))
+                        enemy = enemy_types[et["type"]](
+                            enemy_tower_center, enemy_y,
+                            is_b=et.get("is_boss", False)
+                        )
                         start_x = enemy_tower_center - enemy.width / 2
                         enemy.x = start_x
                         enemies.append(enemy)
                         current_level.spawned_counts[key] += 1
                         current_level.last_spawn_times[key] = current_time
             current_level.all_limited_spawned = current_level.check_all_limited_spawned()
+            # 更新所有角色的狀態效果
+            for cat in cats:
+                cat.update_status_effects(current_time)
+            for enemy in enemies:
+                enemy.update_status_effects(current_time)
             update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls)
             souls[:] = [soul for soul in souls if soul.update()]
             draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map)

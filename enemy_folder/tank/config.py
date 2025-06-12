@@ -1,4 +1,5 @@
 enemy_config = {
+    "type": "tank",
     "hp": 300,
     "atk": 15,
     "speed": 1,
@@ -17,5 +18,6 @@ enemy_config = {
     "windup_frames": [],
     "attack_frames": [],
     "recovery_frames": [],
-    "kb_frames": []
+    "kb_frames": [],
+    "attributes": ["古"]  # Metal and Relic, based on gray color and boss status
 }

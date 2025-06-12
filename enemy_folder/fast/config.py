@@ -1,4 +1,5 @@
 enemy_config = {
+    "type": "fast",
     "hp": 60,
     "atk": 8,
     "speed": 4,
@@ -16,5 +17,6 @@ enemy_config = {
     "windup_frames": [],
     "attack_frames": [],
     "recovery_frames": [],
-    "kb_frames": []
+    "kb_frames": [],
+    "attributes": ["異", "天"]  # Alien and Angel, based on fast type and green color
 }
