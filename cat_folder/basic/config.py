@@ -1,6 +1,6 @@
 cat_config = {
     "hp": 100,
-    "atk": 99,
+    "atk": 50,
     "speed": 1,
     "color": (255, 255, 0),
     "attack_range": 50,
