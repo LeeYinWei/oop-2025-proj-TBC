@@ -5,8 +5,8 @@ from rembg import remove
 import shutil
 
 # 定義路徑
-input_video = "//home/waynelee0124/oop-2025-proj-TBC/smoke/螢幕錄製 2025-06-13 143309.mp4"
-output_folder = "/home/waynelee0124/oop-2025-proj-TBC/smoke/smoke_frames"
+input_video = "//home/*/oop-2025-proj-TBC/smoke/螢幕錄製 2025-06-13 143309.mp4"
+output_folder = "/home/*/oop-2025-proj-TBC/smoke/smoke_frames"
 temp_frames_folder = os.path.join(output_folder, "temp_frames")
 
 # 設定 FFmpeg 提取幀的參數
