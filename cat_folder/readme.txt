@@ -1,0 +1,22 @@
+cat_config = {
+    "hp": 血量,
+    "atk": 攻擊力,
+    "speed": 移動速度,
+    "color": (0, 255, 255),
+    "attack_range": 攻擊範圍,
+    "is_aoe": 是不是攻擊範圍,
+    "kb_limit": kb數,
+    "cooldown": 冷卻時間,
+    "cost": 出擊價格,
+    "width": 圖片長,
+    "height": 圖片寬,
+    "windup_duration": 前搖,
+    "attack_duration": 攻擊時間,
+    "recovery_duration": 後搖,
+    "idle_frames": 攻擊停滯動畫using list,
+    "move_frames": 移動動畫using list,
+    "windup_frames": 攻擊前搖動畫using list,
+    "attack_frames": 攻擊瞬間動畫using list,
+    "recovery_frames": 攻擊後搖動畫using list,
+    "kb_frames": []
+}
