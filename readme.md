@@ -1,33 +1,32 @@
 # oop-2025-proj-TBC
 
-This repository contains the project for OOP-2025. Below is an overview of the project's directory structure and the purpose of key files and folders.
+本專案為 OOP-2025 課程專案。以下是專案的目錄結構概覽以及主要檔案和資料夾的用途說明。
 
-## Project Structure
-
+## 專案結構
 ---
 
-## File and Folder Explanations:
+## 檔案與資料夾說明：
 
-* **`main.py`**: The entry point of the application. This file is responsible for initializing the game and starting the game loop.
+* **`main.py`**: 應用程式的入口點。負責初始化遊戲並啟動遊戲迴圈。
 * **`game/`**:
-    * `__init__.py`: This special file marks the `game` directory as a Python package. It's used to control what gets imported when `from game import *` is used, often used for package-level initialization or exposing key components.
-    * `game_loop.py`: Orchestrates the main sequence of game events, including updating game state, handling input, and rendering.
-    * `constants.py`: Stores immutable values such as screen dimensions, speeds, colors, or other fixed parameters. (Note: You had two `constants.py` entries; I've combined them into one logical explanation.)
-    * `config_loader.py`: Responsible for reading and parsing game configuration files (e.g., `JSON`, `YAML`), setting up game parameters based on loaded data.
-    * `battle_logic.py`: Contains the algorithms and rules governing combat encounters between entities.
-    * `ui.py`: Handles all aspects of the User Interface, including drawing menus, scoreboards, health bars, and other on-screen elements.
+    * `__init__.py`: 這個特殊檔案將 `game` 目錄標記為一個 Python 套件 (package)。它用於控制當 `from game import *` 時會導入哪些內容，通常也用於套件級別的初始化或公開主要元件。
+    * `game_loop.py`: 編排遊戲事件的主要序列，包括更新遊戲狀態、處理輸入和渲染畫面。
+    * `constants.py`: 儲存不可變的值，例如螢幕尺寸、速度、顏色或其他固定參數。
+    * `config_loader.py`: 負責讀取和解析遊戲配置文件（例如 `JSON`, `YAML`），並根據載入的資料設定遊戲參數。
+    * `battle_logic.py`: 包含控制戰鬥遭遇戰的演算法和規則。
+    * `ui.py`: 處理使用者介面的所有方面，包括繪製選單、記分板、生命條和其他螢幕上的元素。
 * **`game/entities/`**:
-    * `__init__.py`: Similar to the `game/__init__.py`, this file marks `entities` as a sub-package and can be used to export specific entity classes or data handlers.
-    * `cat.py`: Defines the `Cat` class, including its properties (e.g., health, attack, position) and behaviors (e.g., movement, attack animations).
-    * `cat_data.py`: Stores or loads specific data profiles for different types of "cats" or their variations, separate from their core behavior.
-    * `enemy.py`: Defines the base `Enemy` class or specific enemy types, including their attributes and actions.
-    * `enemy_data.py`: Manages data such as enemy stats, drop rates, or unique abilities for various enemy types.
-    * `level.py`: Defines the structure and properties of game levels (e.g., layout, spawn points).
-    * `level_data.py`: Stores specific data sets for each game level, such as enemy waves, environmental hazards, or background assets.
-    * `tower.py`: Defines the `Tower` entity, which might be a defensive structure or a central objective.
-    * `smokeeffect.py`: Implements the visual and perhaps functional aspects of smoke effects within the game.
-    * `shockwaveeffect.py`: Implements the visual and functional aspects of shockwave effects, potentially involving area-of-effect damage or knockback.
-    * `soul.py`: Defines the `Soul` entity, which could be a collectible, a resource, or an enemy type.
+    * `__init__.py`: 類似於 `game/__init__.py`，這個檔案將 `entities` 標記為一個子套件，可以用於導出特定的實體類別或資料處理器。
+    * `cat.py`: 定義 `Cat` 類別，包含其屬性（例如生命值、攻擊力、位置）和行為（例如移動、攻擊動畫）。
+    * `cat_data.py`: 儲存或載入不同類型「貓咪」或其變體的特定資料設定，與其核心行為分開。
+    * `enemy.py`: 定義基礎 `Enemy` 類別或特定的敵人類型，包含其屬性和動作。
+    * `enemy_data.py`: 管理各種敵人類型的資料，例如敵人屬性、掉落率或獨特能力。
+    * `level.py`: 定義遊戲關卡的結構和屬性（例如佈局、生成點）。
+    * `level_data.py`: 儲存每個遊戲關卡的特定數據集，例如敵人波次、環境危險或背景資源。
+    * `tower.py`: 定義 `Tower` 實體，它可能是防禦性建築或中心目標。
+    * `smokeeffect.py`: 實現在遊戲中煙霧效果的視覺和可能的功能方面。
+    * `shockwaveeffect.py`: 實現在遊戲中衝擊波效果的視覺和功能方面，可能涉及範圍傷害或擊退。
+    * `soul.py`: 定義 `Soul` 實體，它可能是可收集物、資源或一種敵人類型。
 * **`game/cat_folder/XX`**:
     * `walking`:走路動畫
     * `attacking`:攻擊動畫
