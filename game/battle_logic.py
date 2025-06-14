@@ -25,9 +25,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
     for cat in cats:
         cat_attack_zone = cat.get_attack_zone()
         if cat.anim_state in ["windup", "attacking", "recovery"]:
-            if cat.done_attack == False and now - cat.anim_start_time >= cat.frame_durations["windup"] * len(cat.anim_frames["windup"]):
+            if cat.done_attack == False:
                 # Windup phase is done -> attack
                 cat.done_attack = True# 攻擊完成標誌，在./entities/cat update_animation recovery結束後重製
+                print("A cat is attacking!")
+                print("cat anim state:", cat.anim_state)
+                print("cat attack zone:", cat_attack_zone)
                 if cat.is_aoe:
                     targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
@@ -62,9 +65,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                         tower.contact_points.append(contact_point)
                         cat.contact_points.append(contact_point)
                     else:
+                        #print("cat attacking enemy")
+                        #print("enemies:", enemies)
                         for enemy in enemies:
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
+                                print("enemy taking damage:", enemy.hp, "->", enemy.hp - cat.atk)
                                 enemy.take_damage(cat.atk)  # 使用 take_damage 生成煙霧
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)

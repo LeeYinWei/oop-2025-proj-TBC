@@ -13,7 +13,7 @@ cat_config = {
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
-    "attack_interval": 2000,
+    "attack_interval": 1000,
     "idle_frames": ["cat_folder/basic/attacking/basic_snail.png"],
     "move_frames": ["cat_folder/basic/attacking/basic_snail.png",
                     "cat_folder/basic/walking/basic_snail_walking1.png",
