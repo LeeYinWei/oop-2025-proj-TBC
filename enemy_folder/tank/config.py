@@ -1,6 +1,6 @@
 enemy_config = {
     "type": "tank",
-    "hp": 300,
+    "hp": 3000,
     "atk": 15,
     "speed": 1,
     "color": (128, 128, 128),
