@@ -345,7 +345,7 @@ class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                  move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50, attack_interval=1000, done_attack=False ):
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50, attack_interval=1000,hp_multiplier=1.0, atk_multiplier=1.0):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = hp * (2 if is_b else 1)
@@ -372,7 +372,7 @@ class Enemy:
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 600, "moving": 600,  # 加快 moving 動畫速度
+            "idle": 600, "moving": 100,  # 加快 moving 動畫速度
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
