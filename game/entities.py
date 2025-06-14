@@ -105,9 +105,9 @@ class Cat:
         self.boosts = boosts if boosts is not None else {}
         self.status_effects = {}
         self.status_effects_config = status_effects_config if status_effects_config is not None else {}
-        self.attack_interval = attack_interval  # 動態設置攻擊間隔
-        self.has_retreated = False
-        self.smoke_effects = []
+        self.attack_interval = attack_interval
+        self.has_retreated = False  # 添加後退標記，預設為 False
+        self.smoke_effects = []  # 儲存煙霧特效實例
         self.done_attack = done_attack  # 是否完成攻擊
 
     def move(self):
