@@ -343,7 +343,7 @@ class Cat:
 # ... (後面的 Enemy, Tower, Level 類保持不變)
 class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
-                 is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
+                is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                 move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
                 attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0):
