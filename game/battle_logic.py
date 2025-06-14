@@ -127,8 +127,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
     for enemy in enemies:
         enemy_attack_zone = enemy.get_attack_zone()
         if enemy.anim_state in ["windup", "attacking", "recovery"]:
-            if enemy.anim_state == "attacking" and now - enemy.last_attack_time >= enemy.frame_durations["attacking"] * len(enemy.anim_frames["attacking"]):
-                enemy.last_attack_time = now
+            if enemy.done_attack == False:
+                enemy.done_attack = True  # 攻擊完成標誌，在./entities/enemy update_animation recovery結束後重製
+                
+                print("An enemy is attacking!")
+                print("enemy anim state:", enemy.anim_state)
+                print("enemy attack zone:", enemy_attack_zone)
                 if enemy.is_aoe:
                     targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
                     if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
@@ -177,6 +181,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
                                 break
+        # enemy.anim_state in idle or moving 
         elif enemy.is_aoe:
             targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
@@ -189,23 +194,34 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
             elif not targets:
                 enemy.move()
         else:
+            target_in_range = False
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+                target_in_range = True
                 if now - enemy.last_attack_time >= enemy.attack_interval:
                     enemy.anim_state = "windup"
                     enemy.anim_start_time = now
                     enemy.last_attack_time = now
                     enemy.is_attacking = True
+                else: # 在範圍內但攻擊間隔未過
+                    enemy.anim_state = "idle"
             else:
                 for cat in cats:
                     if enemy_attack_zone.colliderect(cat.get_rect()):
+                        target_in_range = True
+                        # 檢查攻擊間隔是否已過
                         if now - enemy.last_attack_time >= enemy.attack_interval:
                             enemy.anim_state = "windup"
                             enemy.anim_start_time = now
                             enemy.last_attack_time = now
                             enemy.is_attacking = True
                         break
-                else:
-                    enemy.move()
+                
+                if target_in_range == True and enemy.is_attacking == False: # 在範圍內但攻擊間隔未過
+                    enemy.anim_state = "idle"
+
+            
+            if target_in_range == False:
+                enemy.move()
 
     # 應用震波擊退效果，所有 Cat 向後退 200 像素，持續 2 秒
     for effect in shockwave_effects:
