@@ -17,7 +17,8 @@ class Cat:
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
                  target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, done_attack=False):
         self.x = x
-        self.y = BOTTOM_Y - height
+        self.y = y-height  # 將 y 座標設置為底部對齊
+        self.y0 = y-height
         self.hp = hp
         self.max_hp = hp
         self.atk = atk
@@ -83,6 +84,7 @@ class Cat:
         self.smoke_effects = []  # 儲存煙霧特效實例
 
         self.done_attack = done_attack
+        self.slot_index = None  # 儲存使用的 y_slot 索引
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -147,7 +149,7 @@ class Cat:
                 self.anim_state = "idle"
                 self.is_attacking = False
                 self.done_attack = False
-                self.y = BOTTOM_Y - self.height
+                self.y = self.y0  # 恢復到原始 y 座標
                 self.kb_rotation = 0
         else:
             if self.anim_state in ["windup", "attacking", "recovery"]:

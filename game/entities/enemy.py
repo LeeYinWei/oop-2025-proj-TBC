@@ -20,7 +20,8 @@ class Enemy:
                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
                 attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0, done_attack=False):
         self.x = x
-        self.y = BOTTOM_Y - height
+        self.y = y-height
+        self.y0 = y-height  # 儲存原始 y 座標以便恢復
         self.hp = int(hp * hp_multiplier)  # Use variant-specific multiplier
         self.max_hp = self.hp
         self.atk = atk * atk_multiplier  # Use variant-specific multiplier
@@ -82,6 +83,7 @@ class Enemy:
         self.smoke_effects = []  # 儲存煙霧特效實例
 
         self.done_attack = done_attack
+        self.slot_index = None  # 儲存使用的 y_slot 索引
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -115,6 +117,7 @@ class Enemy:
         if thresholds_crossed > 0:
             self.knock_back()
         self.last_hp = self.hp
+        #print(f"(In take_damage)Enemy took damage: {damage}, remaining HP: {self.hp}")
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
@@ -133,7 +136,7 @@ class Enemy:
                 self.anim_state = "idle"
                 self.is_attacking = False
                 self.done_attack = False
-                self.y = BOTTOM_Y - self.height
+                self.y = self.y0  # 恢復到原始 y 座標
                 self.kb_rotation = 0
         else:
             if self.anim_state in ["windup", "attacking", "recovery"]:

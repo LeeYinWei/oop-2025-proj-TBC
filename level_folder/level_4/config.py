@@ -55,7 +55,7 @@ level_config = {
         "y": 150,
         "width": 350,
         "height": 350,
-        "hp": 600,
+        "hp": 6000,
         "tower_path": "tower/enemy_tower.png"
     },
     "tower_distance": 1000
