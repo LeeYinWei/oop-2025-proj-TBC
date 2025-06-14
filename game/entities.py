@@ -42,7 +42,7 @@ class Cat:
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000):
+                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, done_attack=False):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = hp
@@ -106,10 +106,12 @@ class Cat:
         self.status_effects = {}
         self.status_effects_config = status_effects_config if status_effects_config is not None else {}
         self.attack_interval = attack_interval  # 動態設置攻擊間隔
+        self.done_attack = done_attack  # 是否完成攻擊
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
             self.x -= self.speed
+            self.is_attacking = False
             self.anim_state = "moving"
 
     def knock_back(self):
@@ -140,6 +142,7 @@ class Cat:
             if self.kb_progress >= 1.0:
                 self.kb_animation = False
                 self.anim_state = "idle"
+                self.is_attacking = False
                 self.y = BOTTOM_Y - self.height
                 self.kb_rotation = 0
         else:
@@ -161,6 +164,7 @@ class Cat:
                         self.anim_state = "idle"
                         self.anim_start_time = current_time
                         self.is_attacking = False
+                        self.done_attack = False  # 攻擊完成後重置
                 self.anim_progress = min(elapsed / state_duration, 1.0) if state_duration > 0 else 0
             elif not self.is_attacking and self.anim_state != "moving":
                 self.anim_state = "idle"

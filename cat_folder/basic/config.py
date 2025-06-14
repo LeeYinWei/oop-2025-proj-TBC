@@ -15,9 +15,14 @@ cat_config = {
     "recovery_duration": 200,
     "attack_interval": 2000,
     "idle_frames": ["cat_folder/basic/attacking/basic_snail.png"],
-    "move_frames": [f"cat_folder/basic/walking/basic_snail_walking{i}.png" for i in range(1, 3)],
-    "windup_frames": ["cat_folder/basic/attacking/basic_snail_attcking1.png", ],
-    "attack_frames": ["cat_folder/basic/attacking/basic_snail_attcking2.png",],
-    "recovery_frames": [ "cat_folder/basic/attacking/basic_snail_attcking3.png"],
-    "kb_frames": []
+    "move_frames": ["cat_folder/basic/attacking/basic_snail.png",
+                    "cat_folder/basic/walking/basic_snail_walking1.png",
+                    "cat_folder/basic/walking/basic_snail_walking2.png",
+                    "cat_folder/basic/walking/basic_snail_walking1.png"],
+    "windup_frames": ["cat_folder/basic/attacking/basic_snail_attcking1.png",
+                      "cat_folder/basic/attacking/basic_snail_attcking2.png" ],
+    "attack_frames": ["cat_folder/basic/attacking/basic_snail_attcking3.png",],
+    "recovery_frames": [ "cat_folder/basic/attacking/basic_snail_attcking2.png",
+                        "cat_folder/basic/attacking/basic_snail_attcking1.png"],
+    "kb_frames": ["cat_folder/basic/attacking/basic_snail.png"]
 }
