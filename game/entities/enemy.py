@@ -115,6 +115,7 @@ class Enemy:
         if thresholds_crossed > 0:
             self.knock_back()
         self.last_hp = self.hp
+        #print(f"(In take_damage)Enemy took damage: {damage}, remaining HP: {self.hp}")
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()

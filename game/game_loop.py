@@ -120,6 +120,7 @@ async def main_game_loop(screen, clock):
             # 更新所有角色的狀態效果
             for cat in cats:
                 cat.update_status_effects(current_time)
+            #print(f"enemies count: {len(enemies)}")
             for enemy in enemies:
                 enemy.update_status_effects(current_time)
             shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, shockwave_effects)
@@ -137,21 +138,27 @@ async def main_game_loop(screen, clock):
             if enemy_tower:
                 enemy_tower.draw(screen)
             pygame.display.flip()
+
             if our_tower.hp <= 0:
                 status = "lose"
                 game_state = "end"
+                print("Our tower destroyed, game over.")
             elif enemy_tower:
                 if enemy_tower.hp <= 0:
                     status = "victory"
                     game_state = "end"
+                    print("Enemy tower destroyed, we win!")
                 elif current_level.all_limited_spawned and not any(
                     et["is_limited"] is False for et in current_level.enemy_types
                 ) and not enemies:
                     status = "victory"
                     game_state = "end"
+                    print(enemies)
+                    print("All enemies defeated, we win!")
                 elif current_level.survival_time > 0 and (current_time - level_start_time) >= current_level.survival_time * 1000:
                     status = "victory"
                     game_state = "end"
+                    print("Survival time reached, we win!")
         elif game_state == "end":
             current_level = levels[selected_level]
             draw_end_screen(screen, current_level, status, end_font, font)
