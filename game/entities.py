@@ -133,7 +133,7 @@ class Cat:
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 600, "moving": 100,
+            "idle": 600, "moving": 600,
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -409,9 +409,12 @@ class Enemy:
         self.attack_interval = attack_interval
         self.smoke_effects = []  # 儲存煙霧特效實例
 
+        self.done_attack = done_attack
+
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
             self.x += self.speed
+            self.is_attacking = False
             self.anim_state = "moving"
 
     def knock_back(self):
@@ -456,6 +459,8 @@ class Enemy:
             if self.kb_progress >= 1.0:
                 self.kb_animation = False
                 self.anim_state = "idle"
+                self.is_attacking = False
+                self.done_attack = False
                 self.y = BOTTOM_Y - self.height
                 self.kb_rotation = 0
         else:
@@ -477,6 +482,7 @@ class Enemy:
                         self.anim_state = "idle"
                         self.anim_start_time = current_time
                         self.is_attacking = False
+                        self.done_attack = False  # 攻擊完成後重置
                 self.anim_progress = min(elapsed / state_duration, 1.0) if state_duration > 0 else 0
             elif not self.is_attacking and self.anim_state != "moving":
                 self.anim_state = "idle"
@@ -521,8 +527,6 @@ class Enemy:
         pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
 
     def get_attack_zone(self):
-        if self.kb_animation or self.anim_state in ["windup", "recovery"]:
-            return pygame.Rect(0, 0, 0, 0)
         return pygame.Rect(self.x + self.width, self.y, self.attack_range, self.height)
 
     def get_rect(self):
