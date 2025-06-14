@@ -13,3 +13,4 @@ def load_config(folder, subfolder, config_name="config"):
     if folder == "level_folder":
         return module.level_config
     return module.cat_config if folder == "cat_folder" else module.enemy_config
+

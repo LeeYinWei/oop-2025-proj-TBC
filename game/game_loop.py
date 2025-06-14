@@ -162,3 +162,4 @@ async def main_game_loop(screen, clock):
                     our_tower = None
                     enemy_tower = None
         await asyncio.sleep(1 / FPS)
+

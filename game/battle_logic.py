@@ -188,12 +188,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                 else:
                     enemy.move()
 
-    # 應用震波擊退效果，所有 Cat 向後退 50 像素，持續 2 秒
+    # 應用震波擊退效果，所有 Cat 向後退 200 像素，持續 2 秒
     for effect in shockwave_effects:
         if effect.update():
             for cat in cats:
                 if not cat.is_attacking and not getattr(cat, 'has_retreated', False):  # 僅在未後退且非攻擊中時執行
-                    cat.start_retreat(50)  # 啟動 2 秒後退 50 像素
+                    cat.start_retreat(200)  # 啟動 2 秒後退 50 像素
                     cat.anim_start_time = pygame.time.get_ticks()  # 觸發 walking 動畫
         else:
             shockwave_effects.remove(effect)
@@ -222,3 +222,4 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
         our_tower.hp = 0
 
     return shockwave_effects
+

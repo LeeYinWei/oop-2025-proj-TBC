@@ -99,6 +99,8 @@ class SmokeEffect:
             )
             screen.blit(smoke_surface, (self.x - self.size, self.y - self.size))
 
+# ... (前面的代碼保持不變)
+
 class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
@@ -159,7 +161,7 @@ class Cat:
         self.kb_target_x = 0
         self.kb_start_y = self.y
         self.kb_progress = 0
-        self.kb_duration = 2000  # 後退時間設為 2 秒
+        self.kb_duration = 500  # 將後退時間從 2000ms 改為 500ms
         self.kb_start_time = 0
         self.kb_rotation = 0
         self.target_attributes = target_attributes if target_attributes is not None else []
@@ -193,7 +195,7 @@ class Cat:
         if not self.is_attacking and not self.has_retreated:
             self.kb_animation = True
             self.kb_start_x = self.x
-            self.kb_target_x = self.x - distance  # 向左移動指定距離
+            self.kb_target_x = self.x + distance  # 向左移動指定距離
             self.kb_start_y = self.y
             self.kb_start_time = pygame.time.get_ticks()
             self.kb_progress = 0
@@ -220,7 +222,8 @@ class Cat:
         if self.kb_animation:
             elapsed = current_time - self.kb_start_time
             self.kb_progress = min(elapsed / self.kb_duration, 1.0)
-            eased_progress = self.kb_progress ** 2  # 平滑移動效果
+            # eased_progress = self.kb_progress ** 2  # 可選移除平滑效果
+            eased_progress = self.kb_progress  # 改為線性移動以提高感知速度
             self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
             self.y = self.kb_start_y
             if self.kb_progress < 0.5:
@@ -333,6 +336,7 @@ class Cat:
             elif effect == "Weaken":
                 self.atk /= 0.7
 
+# ... (後面的 Enemy, Tower, Level 類保持不變)
 class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
@@ -739,3 +743,4 @@ if os.path.exists(level_folder):
 else:
     print(f"Directory '{level_folder}' not found")
     sys.exit()
+
