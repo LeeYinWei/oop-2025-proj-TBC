@@ -4,6 +4,7 @@
 from .cat import Cat
 from .enemy import Enemy
 from .level import Level
+from .ymanager import YManager
 
 # 匯入輔助 class
 from .smokeeffect import SmokeEffect

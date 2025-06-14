@@ -1,7 +1,7 @@
-from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect
+from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect, YManager
 import pygame
 
-def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_effects=None):
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls,cat_y_manager,enemy_y_manager, shockwave_effects=None):
     if shockwave_effects is None:
         shockwave_effects = []
 
@@ -253,6 +253,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
             new_enemies.append(enemy)
         else:
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
+            enemy_y_manager.release_y(enemy.slot_index)
     enemies[:] = new_enemies
 
     # Centralized soul creation for cat deaths
@@ -262,6 +263,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
             new_cats.append(cat)
         else:
             souls.append(Soul(cat.x + cat.width // 2, cat.y))
+            cat_y_manager.release_y(cat.slot_index)
     cats[:] = new_cats
 
     if enemy_tower and enemy_tower.hp <= 0:
