@@ -105,9 +105,11 @@ async def main_game_loop(screen, clock):
                     interval = et.get("spawn_interval_1", current_level.spawn_interval)
                     if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
+                        config = current_level.enemy_configs.get(et["type"], {})
                         enemy = enemy_types[et["type"]](
                             enemy_tower_center, enemy_y,
-                            is_b=et.get("is_boss", False)
+                            is_b=et.get("is_boss", False),
+                            cfg=config  # Pass the config to get multipliers
                         )
                         start_x = enemy_tower_center - enemy.width / 2
                         enemy.x = start_x

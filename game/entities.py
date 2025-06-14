@@ -343,14 +343,15 @@ class Cat:
 # ... (後面的 Enemy, Tower, Level 類保持不變)
 class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
-                 is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
-                 move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50, attack_interval=1000):
+                is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
+                move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
+                kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
+                attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0):
         self.x = x
         self.y = BOTTOM_Y - height
-        self.hp = hp * (2 if is_b else 1)
+        self.hp = int(hp * hp_multiplier)  # Use variant-specific multiplier
         self.max_hp = self.hp
-        self.atk = atk * (1.5 if is_b else 1)
+        self.atk = atk * atk_multiplier  # Use variant-specific multiplier
         self.speed = speed
         self.color = color
         self.attack_range = attack_range
@@ -372,7 +373,7 @@ class Enemy:
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 600, "moving": 100,  # 加快 moving 動畫速度
+            "idle": 600, "moving": 100,
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -716,7 +717,9 @@ if os.path.exists(enemy_folder):
                     recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
                     windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
                     recovery_duration=cfg["recovery_duration"],
-                    attack_interval=cfg.get("attack_interval", 1000)
+                    attack_interval=cfg.get("attack_interval", 1000),
+                    hp_multiplier=cfg.get("hp_multiplier", 1.0),  # Default to 1.0 if not set
+                    atk_multiplier=cfg.get("atk_multiplier", 1.0)  # Default to 1.0 if not set
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")

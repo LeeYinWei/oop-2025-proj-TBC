@@ -10,7 +10,9 @@ level_config = {
             "weight": 0.5,
             "tower_hp_percent": 100,
             "initial_delay": 5000,
-            "spawn_interval_1": 3000
+            "spawn_interval_1": 3000,
+            "hp_multiplier": 1.0,  # Default multiplier for version1
+            "atk_multiplier": 1.0   # Default multiplier for version1
         },
         {
             "type": "basic",
@@ -20,8 +22,10 @@ level_config = {
             "spawn_count": 2,
             "weight": 0.3,
             "tower_hp_percent": 100,
-            "initial_delay": 7000,
+            "initial_delay": 10000,
             "spawn_interval_1": 2000,
+            "hp_multiplier": 2.5,  # Higher HP for boss variant
+            "atk_multiplier": 2.0  # Higher attack for boss variant
         },
         {
             "type": "fast",
@@ -32,7 +36,9 @@ level_config = {
             "weight": 0.3,
             "tower_hp_percent": 80,
             "initial_delay": 7000,
-            "spawn_interval_1": 2000
+            "spawn_interval_1": 2000,
+            "hp_multiplier": 1,  # Lower HP for fast variant
+            "atk_multiplier": 1  # Slightly higher attack for fast variant
         }
     ],
     "spawn_interval": 3000,
