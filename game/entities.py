@@ -173,6 +173,8 @@ class Cat:
         self.has_retreated = False  # 添加後退標記，預設為 False
         self.smoke_effects = []  # 儲存煙霧特效實例
 
+        self.done_attack = done_attack
+
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
             self.x -= self.speed
