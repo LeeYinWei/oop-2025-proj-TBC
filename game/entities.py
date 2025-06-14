@@ -346,7 +346,7 @@ class Enemy:
                 is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                 move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0):
+                attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0, done_attack=False):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = int(hp * hp_multiplier)  # Use variant-specific multiplier
