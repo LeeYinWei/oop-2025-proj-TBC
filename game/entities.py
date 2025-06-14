@@ -108,7 +108,6 @@ class Cat:
         self.attack_interval = attack_interval
         self.has_retreated = False  # 添加後退標記，預設為 False
         self.smoke_effects = []  # 儲存煙霧特效實例
-        self.done_attack = done_attack  # 是否完成攻擊
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
