@@ -237,6 +237,7 @@ class Cat:
                 self.kb_animation = False
                 self.anim_state = "idle"
                 self.is_attacking = False
+                self.done_attack = False
                 self.y = BOTTOM_Y - self.height
                 self.kb_rotation = 0
         else:
@@ -300,8 +301,6 @@ class Cat:
         pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
 
     def get_attack_zone(self):
-        if self.kb_animation or self.anim_state in ["windup", "recovery"]:
-            return pygame.Rect(0, 0, 0, 0)
         return pygame.Rect(self.x - self.attack_range, self.y, self.attack_range, self.height)
 
     def get_rect(self):
