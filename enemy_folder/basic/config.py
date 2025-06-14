@@ -12,6 +12,7 @@ enemy_config = {
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
+    "attack_interval": 3000,
     "idle_frames": ["enemy_folder/basic/walking/basic_enemy.png"],  # 使用 basic_enemy.png 作為 idle 狀態
     "move_frames": [
         "enemy_folder/basic/walking/basic_enemy_walking_1.png",

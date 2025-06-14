@@ -12,6 +12,7 @@ enemy_config = {
     "windup_duration": 100,
     "attack_duration": 100,
     "recovery_duration": 100,
+    "attack_interval": 2000,
     "idle_frames": ["enemy_folder/fast/walking/fast_enemy_walking.png"],
     "move_frames": [f"enemy_folder/fast/walking/fast_enemy_walking_{i}.png" for i in range(1, 3)],
     "windup_frames": ["enemy_folder/fast/attacking/fast_enemy_attacking_1.png"],

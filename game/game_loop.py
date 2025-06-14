@@ -86,7 +86,6 @@ async def main_game_loop(screen, clock):
                         current_budget -= cat_costs[cat_key_map[event.key]]
                         cat_type = cat_key_map[event.key]
                         if current_time - last_spawn_time[cat_type] >= cat_cooldowns[cat_type]:
-                            # Center cat on our tower
                             our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
                             cat = cat_types[cat_type](our_tower_center, cat_y)
                             start_x = our_tower_center - cat.width / 2
@@ -103,7 +102,6 @@ async def main_game_loop(screen, clock):
                 if (not et.get("is_limited", False) or current_level.spawned_counts.get(key, 0) < et.get("spawn_count", 0)) and tower_hp_percent <= et.get("tower_hp_percent", 100):
                     interval = et.get("spawn_interval_1", current_level.spawn_interval)
                     if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
-                        # Center enemy on enemy tower
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
                         enemy = enemy_types[et["type"]](
                             enemy_tower_center, enemy_y,

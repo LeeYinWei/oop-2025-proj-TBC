@@ -42,7 +42,7 @@ class Cat:
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None):
+                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = hp
@@ -105,6 +105,7 @@ class Cat:
         self.boosts = boosts if boosts is not None else {}
         self.status_effects = {}
         self.status_effects_config = status_effects_config if status_effects_config is not None else {}
+        self.attack_interval = attack_interval  # 動態設置攻擊間隔
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -240,7 +241,7 @@ class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                  move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
-                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50):
+                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50, attack_interval=1000):
         self.x = x
         self.y = BOTTOM_Y - height
         self.hp = hp * (2 if is_b else 1)
@@ -300,6 +301,7 @@ class Enemy:
         self.kb_rotation = 0
         self.status_effects = {}
         self.status_effects_config = {}
+        self.attack_interval = attack_interval  # 動態設置攻擊間隔
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -540,7 +542,7 @@ class Level:
                     return False
         return True
 
-# Load configurations for cats (unchanged)
+# 更新 cat_types 載入邏輯
 cat_types = {}
 cat_cooldowns = {}
 cat_costs = {}
@@ -560,9 +562,10 @@ if os.path.exists(cat_folder):
                     target_attributes=cfg.get("target_attributes", []),
                     immunities=cfg.get("immunities", {}),
                     boosts=cfg.get("boosts", {}),
-                    status_effects_config=cfg.get("status_effects", {})
+                    status_effects_config=cfg.get("status_effects", {}),
+                    attack_interval=cfg.get("attack_interval", 1000)  # 從 attack_interval 獲取
                 )
-                cat_cooldowns[cat_type] = config["cooldown"]
+                cat_cooldowns[cat_type] = config["cooldown"]  # 召喚冷卻
                 cat_costs[cat_type] = config["cost"]
             except Exception as e:
                 print(f"Error loading cat config for '{cat_type}': {e}")
@@ -570,7 +573,7 @@ else:
     print(f"Directory '{cat_folder}' not found")
     sys.exit()
 
-# Load configurations for enemies (simplified)
+# 同樣更新 enemy_types 載入邏輯
 enemy_types = {}
 enemy_folder = "enemy_folder"
 if os.path.exists(enemy_folder):
@@ -586,13 +589,15 @@ if os.path.exists(enemy_folder):
                     windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),
                     recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
                     windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
-                    recovery_duration=cfg["recovery_duration"]
+                    recovery_duration=cfg["recovery_duration"],
+                    attack_interval=cfg.get("attack_interval", 1000)  # 從 attack_interval 獲取
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")
 else:
     print(f"Directory '{enemy_folder}' not found")
     sys.exit()
+
 
 # Load configurations for levels (unchanged)
 levels = []

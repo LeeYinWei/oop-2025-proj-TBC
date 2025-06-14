@@ -13,6 +13,7 @@ cat_config = {
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
+    "attack_interval": 10000,
     "idle_frames": ["cat_folder/speedy/walking/speedy.png"],
     "move_frames": ["cat_folder/speedy/walking/speedy-walking1.png",
                     "cat_folder/speedy/walking/speedy-walking2.png"],

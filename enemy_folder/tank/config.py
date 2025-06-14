@@ -13,6 +13,7 @@ enemy_config = {
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
+    "attack_interval": 1000,
     "idle_frames": ["enemy_folder/tank/walking/tank_enemy_walking_1.png"],
     "move_frames": [f"enemy_folder/tank/walking/tank_enemy_walking_{i}.png" for i in range(1, 3)],
     "windup_frames": [f"enemy_folder/tank/attacking/tank_enemy_attacking_{i}.png" for i in range(1, 3)],

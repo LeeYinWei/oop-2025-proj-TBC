@@ -68,7 +68,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
             if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                 targets.append(enemy_tower)
-            if targets and now - cat.last_attack_time > 1000:
+            if targets and now - cat.last_attack_time >= cat.attack_interval:
                 cat.anim_state = "windup"
                 cat.anim_start_time = now
                 cat.last_attack_time = now
@@ -77,7 +77,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                 cat.move()
         else:
             if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
-                if now - cat.last_attack_time > 1000:
+                if now - cat.last_attack_time >= cat.attack_interval:
                     cat.anim_state = "windup"
                     cat.anim_start_time = now
                     cat.last_attack_time = now
@@ -85,7 +85,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             else:
                 for enemy in enemies:
                     if cat_attack_zone.colliderect(enemy.get_rect()):
-                        if now - cat.last_attack_time > 1000:
+                        if now - cat.last_attack_time >= cat.attack_interval:
                             cat.anim_state = "windup"
                             cat.anim_start_time = now
                             cat.last_attack_time = now
@@ -151,7 +151,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
                 targets.append(our_tower)
-            if targets and now - enemy.last_attack_time > 1000:
+            if targets and now - enemy.last_attack_time >= enemy.attack_interval:
                 enemy.anim_state = "windup"
                 enemy.anim_start_time = now
                 enemy.last_attack_time = now
@@ -160,7 +160,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                 enemy.move()
         else:
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
-                if now - enemy.last_attack_time > 1000:
+                if now - enemy.last_attack_time >= enemy.attack_interval:
                     enemy.anim_state = "windup"
                     enemy.anim_start_time = now
                     enemy.last_attack_time = now
@@ -168,7 +168,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             else:
                 for cat in cats:
                     if enemy_attack_zone.colliderect(cat.get_rect()):
-                        if now - enemy.last_attack_time > 1000:
+                        if now - enemy.last_attack_time >= enemy.attack_interval:
                             enemy.anim_state = "windup"
                             enemy.anim_start_time = now
                             enemy.last_attack_time = now
@@ -201,3 +201,4 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
         enemy_tower.hp = 0
     if our_tower.hp <= 0:
         our_tower.hp = 0
+        
