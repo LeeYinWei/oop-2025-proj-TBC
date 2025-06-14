@@ -25,8 +25,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
     for cat in cats:
         cat_attack_zone = cat.get_attack_zone()
         if cat.anim_state in ["windup", "attacking", "recovery"]:
-            if cat.anim_state == "attacking" and now - cat.last_attack_time >= cat.frame_durations["attacking"] * len(cat.anim_frames["attacking"]):
-                cat.last_attack_time = now
+            if cat.done_attack == False and now - cat.anim_start_time >= cat.frame_durations["windup"] * len(cat.anim_frames["windup"]):
+                # Windup phase is done -> attack
+                cat.done_attack = True# 攻擊完成標誌，在./entities/cat update_animation recovery結束後重製
                 if cat.is_aoe:
                     targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
@@ -75,10 +76,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
                                 break
+        # cat.anim_state in idle or moving                 
         elif cat.is_aoe:
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
             if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                 targets.append(enemy_tower)
+            # Check if there are targets in the attack zone
             if targets and now - cat.last_attack_time >= cat.attack_interval:
                 cat.anim_state = "windup"
                 cat.anim_start_time = now
@@ -87,23 +90,33 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
             elif not targets:
                 cat.move()
         else:
-            if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
-                if now - cat.last_attack_time >= cat.attack_interval:
+            target_in_range = False
+            if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):# 檢查塔是否在攻擊範圍內
+                target_in_range = True
+                if now - cat.last_attack_time >= cat.attack_interval:#在範圍內且攻擊間隔已過
                     cat.anim_state = "windup"
                     cat.anim_start_time = now
                     cat.last_attack_time = now
                     cat.is_attacking = True
+                else: # 在範圍內但攻擊間隔未過
+                    cat.anim_state = "idle"
             else:
                 for enemy in enemies:
                     if cat_attack_zone.colliderect(enemy.get_rect()):
+                        target_in_range = True
+                        # 檢查攻擊間隔是否已過
                         if now - cat.last_attack_time >= cat.attack_interval:
                             cat.anim_state = "windup"
                             cat.anim_start_time = now
                             cat.last_attack_time = now
                             cat.is_attacking = True
-                        break
-                else:
-                    cat.move()
+                        break  # 只找第一個目標
+                    
+                if target_in_range == True and cat.is_attacking == False: # 在範圍內但攻擊間隔未過
+                    cat.anim_state = "idle"
+
+            if target_in_range == False:
+                cat.move()
 
     for enemy in enemies:
         enemy_attack_zone = enemy.get_attack_zone()

@@ -13,12 +13,16 @@ cat_config = {
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
-    "attack_interval": 10000,
+    "attack_interval": 3000,
     "idle_frames": ["cat_folder/speedy/walking/speedy.png"],
-    "move_frames": ["cat_folder/speedy/walking/speedy-walking1.png",
-                    "cat_folder/speedy/walking/speedy-walking2.png"],
-    "windup_frames": ["cat_folder/speedy/attacking/speedy-attacking1.png"],
-    "attack_frames": ["cat_folder/speedy/attacking/speedy-attacking2.png"],
-    "recovery_frames": ["cat_folder/speedy/attacking/speedy-attacking3.png"],
-    "kb_frames": []
+    "move_frames": ["cat_folder/speedy/walking/speedy.png",
+                    "cat_folder/speedy/walking/speedy-walking1.png",
+                    "cat_folder/speedy/walking/speedy-walking2.png",
+                    "cat_folder/speedy/walking/speedy-walking1.png"],
+    "windup_frames": ["cat_folder/speedy/attacking/speedy-attacking1.png",
+                      "cat_folder/speedy/attacking/speedy-attacking2.png"],
+    "attack_frames": ["cat_folder/speedy/attacking/speedy-attacking3.png"],
+    "recovery_frames": ["cat_folder/speedy/attacking/speedy-attacking2.png",
+                        "cat_folder/speedy/attacking/speedy-attacking1.png"],
+    "kb_frames": ["cat_folder/speedy/walking/speedy.png"]
 }
