@@ -28,3 +28,21 @@ This repository contains the project for OOP-2025. Below is an overview of the p
     * `smokeeffect.py`: Implements the visual and perhaps functional aspects of smoke effects within the game.
     * `shockwaveeffect.py`: Implements the visual and functional aspects of shockwave effects, potentially involving area-of-effect damage or knockback.
     * `soul.py`: Defines the `Soul` entity, which could be a collectible, a resource, or an enemy type.
+* **`game/cat_folder/XX`**:
+    * `walking`:走路動畫
+    * `attacking`:攻擊動畫
+    * `config.py`:角色資料
+    
+* **`game/enemy_folder/XX`**:
+    * `walking`:走路動畫
+    * `attacking`:攻擊動畫
+    * `config.py`:敵人資料
+* **`game/level_folder/level_X`**:
+    * `config.py`:關卡資料
+
+* **`game/background`**:
+    * `background1.png`:背景
+    
+## 遊戲流程:
+
+## 玩法:
