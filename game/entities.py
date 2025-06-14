@@ -1,6 +1,7 @@
 import pygame
 import math
 import sys, os
+import random
 
 from .config_loader import load_config
 
@@ -8,34 +9,95 @@ from .config_loader import load_config
 BOTTOM_Y = 490
 
 class Soul:
-    def __init__(self, x, y, width=20, height=20, duration=1000):
+    def __init__(self, x, y, radius=10, duration=1000):
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
+        self.radius = radius
         self.start_time = pygame.time.get_ticks()
         self.duration = duration
         self.alpha = 1.0
+        self.color = (255, 255, 255)  # 白色圓形
 
     def update(self):
         current_time = pygame.time.get_ticks()
         elapsed = current_time - self.start_time
         if elapsed >= self.duration:
             return False
-        self.y -= 0.5
+        self.y -= 0.5  # 上升動畫
+        self.alpha = max(0, 1.0 - (elapsed / self.duration))  # 透明度漸變
+        return True
+
+    def draw(self, screen):
+        if self.alpha > 0:
+            soul_surface = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(
+                soul_surface,
+                (self.color[0], self.color[1], self.color[2], int(self.alpha * 255)),
+                (self.radius, self.radius),
+                self.radius
+            )
+            screen.blit(soul_surface, (self.x - self.radius, self.y - self.radius))
+
+class ShockwaveEffect:
+    def __init__(self, x, y, max_radius=200, duration=1000, thickness=5):
+        self.x = x
+        self.y = y
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration
+        self.alpha = 1.0
+        self.max_radius = max_radius
+        self.thickness = thickness  # 中空圓形的邊框厚度
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - self.start_time
+        if elapsed >= self.duration:
+            return False
         self.alpha = max(0, 1.0 - (elapsed / self.duration))
         return True
 
     def draw(self, screen):
         if self.alpha > 0:
-            soul_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            current_time = pygame.time.get_ticks()
+            elapsed = current_time - self.start_time
+            progress = elapsed / self.duration
+            radius = int(self.max_radius * progress)
+            if radius > self.thickness:  # 確保內徑大於 0
+                inner_radius = max(0, radius - self.thickness)
+                outer_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(outer_surface, (100, 100, 255, int(self.alpha * 255)), (radius, radius), radius, self.thickness)
+                screen.blit(outer_surface, (self.x - radius, self.y - radius))
+
+class SmokeEffect:
+    def __init__(self, x, y, duration=1000):
+        self.x = x
+        self.y = y
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration  # 煙霧持續時間
+        self.alpha = 1.0
+        self.size = random.randint(20, 40)  # 隨機煙霧大小
+        self.color = (150, 150, 150)  # 灰色煙霧
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - self.start_time
+        if elapsed >= self.duration:
+            return False
+        self.alpha = max(0, 1.0 - (elapsed / self.duration))  # 逐漸消失
+        self.size += 0.5  # 煙霧逐漸擴散
+        self.y -= 0.3  # 向上飄動
+        return True
+
+    def draw(self, screen):
+        if self.alpha > 0:
+            smoke_surface = pygame.Surface((self.size * 2, self.size * 2), pygame.SRCALPHA)
             pygame.draw.circle(
-                soul_surface,
-                (255, 255, 255, int(self.alpha * 255)),
-                (self.width // 2, self.height // 2),
-                self.width // 2
+                smoke_surface,
+                (self.color[0], self.color[1], self.color[2], int(self.alpha * 255)),
+                (self.size, self.size),
+                self.size
             )
-            screen.blit(soul_surface, (self.x - self.width // 2, self.y - self.height // 2))
+            screen.blit(smoke_surface, (self.x - self.size, self.y - self.size))
 
 class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
@@ -69,7 +131,7 @@ class Cat:
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 600, "moving": 600,
+            "idle": 600, "moving": 100,
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -97,7 +159,7 @@ class Cat:
         self.kb_target_x = 0
         self.kb_start_y = self.y
         self.kb_progress = 0
-        self.kb_duration = 300
+        self.kb_duration = 2000  # 後退時間設為 2 秒
         self.kb_start_time = 0
         self.kb_rotation = 0
         self.target_attributes = target_attributes if target_attributes is not None else []
@@ -105,7 +167,9 @@ class Cat:
         self.boosts = boosts if boosts is not None else {}
         self.status_effects = {}
         self.status_effects_config = status_effects_config if status_effects_config is not None else {}
-        self.attack_interval = attack_interval  # 動態設置攻擊間隔
+        self.attack_interval = attack_interval
+        self.has_retreated = False  # 添加後退標記，預設為 False
+        self.smoke_effects = []  # 儲存煙霧特效實例
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -120,17 +184,43 @@ class Cat:
             self.kb_start_y = self.y
             self.kb_start_time = pygame.time.get_ticks()
             self.kb_progress = 0
-            self.anim_state = "knockback"
+            self.anim_state = "moving"
             self.kb_count += 1
             if self.kb_count >= self.kb_limit:
                 self.hp = 0
+
+    def start_retreat(self, distance):
+        if not self.is_attacking and not self.has_retreated:
+            self.kb_animation = True
+            self.kb_start_x = self.x
+            self.kb_target_x = self.x - distance  # 向左移動指定距離
+            self.kb_start_y = self.y
+            self.kb_start_time = pygame.time.get_ticks()
+            self.kb_progress = 0
+            self.anim_state = "moving"
+            self.has_retreated = True
+
+    def take_damage(self, damage):
+        self.hp -= damage
+        if self.hp > 0:
+            # 被攻擊時生成煙霧特效，3-5 個粒子，位置在角色中心
+            center_x = self.x + self.width // 2
+            center_y = self.y + self.height // 2
+            for _ in range(random.randint(3, 5)):
+                smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
+                smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
+                self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+        thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
+        if thresholds_crossed > 0:
+            self.knock_back()
+        self.last_hp = self.hp
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
         if self.kb_animation:
             elapsed = current_time - self.kb_start_time
             self.kb_progress = min(elapsed / self.kb_duration, 1.0)
-            eased_progress = 1 - (1 - self.kb_progress) ** 2
+            eased_progress = self.kb_progress ** 2  # 平滑移動效果
             self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
             self.y = self.kb_start_y
             if self.kb_progress < 0.5:
@@ -168,8 +258,11 @@ class Cat:
             elif self.anim_state == "moving":
                 self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
 
+    def update_smoke_effects(self):
+        self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
+
     def get_current_frame(self):
-        state = "knockback" if self.kb_animation else self.anim_state
+        state = "moving" if self.kb_animation else self.anim_state
         frames = self.anim_frames[state]
         if not frames:
             frames = self.anim_frames["idle"]
@@ -187,6 +280,9 @@ class Cat:
             rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
             screen.blit(rotated_image, rect.topleft)
         self.draw_hp_bar(screen)
+        # 繪製煙霧特效
+        for smoke in self.smoke_effects:
+            smoke.draw(screen)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
@@ -268,7 +364,7 @@ class Enemy:
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
         self.frame_durations = {
-            "idle": 600, "moving": 600,
+            "idle": 600, "moving": 100,  # 加快 moving 動畫速度
             "windup": windup_duration / max(1, len(windup_frames or [])),
             "attacking": attack_duration / max(1, len(attack_frames or [])),
             "recovery": recovery_duration / max(1, len(recovery_frames or [])),
@@ -301,7 +397,8 @@ class Enemy:
         self.kb_rotation = 0
         self.status_effects = {}
         self.status_effects_config = {}
-        self.attack_interval = attack_interval  # 動態設置攻擊間隔
+        self.attack_interval = attack_interval
+        self.smoke_effects = []  # 儲存煙霧特效實例
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -311,7 +408,7 @@ class Enemy:
     def knock_back(self):
         self.kb_animation = True
         self.kb_start_x = self.x
-        self.kb_target_x = self.x - 50
+        self.kb_target_x = self.x - 50  # 向後跳
         self.kb_start_y = self.y
         self.kb_start_time = pygame.time.get_ticks()
         self.kb_progress = 0
@@ -319,6 +416,21 @@ class Enemy:
         self.kb_count += 1
         if self.kb_count >= self.kb_limit:
             self.hp = 0
+
+    def take_damage(self, damage):
+        self.hp -= damage
+        if self.hp > 0:
+            # 被攻擊時生成煙霧特效，3-5 個粒子，位置在角色中心
+            center_x = self.x + self.width // 2
+            center_y = self.y + self.height // 2
+            for _ in range(random.randint(3, 5)):
+                smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
+                smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
+                self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+        thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
+        if thresholds_crossed > 0:
+            self.knock_back()
+        self.last_hp = self.hp
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
@@ -363,6 +475,9 @@ class Enemy:
             elif self.anim_state == "moving":
                 self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
 
+    def update_smoke_effects(self):
+        self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
+
     def get_current_frame(self):
         state = "knockback" if self.kb_animation else self.anim_state
         frames = self.anim_frames[state]
@@ -382,6 +497,9 @@ class Enemy:
             rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
             screen.blit(rotated_image, rect.topleft)
         self.draw_hp_bar(screen)
+        # 繪製煙霧特效
+        for smoke in self.smoke_effects:
+            smoke.draw(screen)
         if self.is_boss:
             boss_label = pygame.font.SysFont(None, 20).render("Boss", True, (255, 0, 0))
             screen.blit(boss_label, (self.x, self.y - 20))
@@ -563,9 +681,9 @@ if os.path.exists(cat_folder):
                     immunities=cfg.get("immunities", {}),
                     boosts=cfg.get("boosts", {}),
                     status_effects_config=cfg.get("status_effects", {}),
-                    attack_interval=cfg.get("attack_interval", 1000)  # 從 attack_interval 獲取
+                    attack_interval=cfg.get("attack_interval", 1000)
                 )
-                cat_cooldowns[cat_type] = config["cooldown"]  # 召喚冷卻
+                cat_cooldowns[cat_type] = config["cooldown"]
                 cat_costs[cat_type] = config["cost"]
             except Exception as e:
                 print(f"Error loading cat config for '{cat_type}': {e}")
@@ -590,14 +708,13 @@ if os.path.exists(enemy_folder):
                     recovery_frames=cfg.get("recovery_frames"), kb_frames=cfg.get("kb_frames"),
                     windup_duration=cfg["windup_duration"], attack_duration=cfg["attack_duration"],
                     recovery_duration=cfg["recovery_duration"],
-                    attack_interval=cfg.get("attack_interval", 1000)  # 從 attack_interval 獲取
+                    attack_interval=cfg.get("attack_interval", 1000)
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")
 else:
     print(f"Directory '{enemy_folder}' not found")
     sys.exit()
-
 
 # Load configurations for levels (unchanged)
 levels = []

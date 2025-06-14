@@ -1,15 +1,26 @@
-from .entities import Enemy, Cat, Soul, Tower
+from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect
+import pygame
 
-def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_effects=None):
+    if shockwave_effects is None:
+        shockwave_effects = []
+
     for cat in cats:
         cat.is_attacking = False
         cat.contact_points = []
+        cat.update_smoke_effects()  # 更新煙霧效果
     for enemy in enemies:
         enemy.is_attacking = False
         enemy.contact_points = []
+        enemy.update_smoke_effects()  # 更新煙霧效果
     our_tower.contact_points = []
     if enemy_tower:
         enemy_tower.contact_points = []
+
+    # 檢查是否有 boss 出現並觸發單次震波
+    boss_present = any(enemy.is_boss for enemy in enemies)
+    if boss_present and enemy_tower and not shockwave_effects:  # 只在無震波時觸發一次
+        shockwave_effects.append(ShockwaveEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2))
 
     for cat in cats:
         cat_attack_zone = cat.get_attack_zone()
@@ -22,17 +33,17 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                         targets.append(enemy_tower)
                     for tar in targets:
                         if isinstance(tar, Enemy):
-                            e = tar
-                            old_hp = e.hp
-                            e.hp -= cat.atk
-                            if e.hp > 0:
-                                thresholds_crossed = int(old_hp / e.kb_threshold) - int(e.hp / e.kb_threshold)
+                            enemy = tar
+                            old_hp = enemy.hp
+                            enemy.take_damage(cat.atk)  # 使用 take_damage 生成煙霧
+                            if enemy.hp > 0:
+                                thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                 if thresholds_crossed > 0:
-                                    e.knock_back()
-                            e.last_hp = e.hp
-                            contact_rect = cat_attack_zone.clip(e.get_rect())
+                                    enemy.knock_back()
+                            enemy.last_hp = enemy.hp
+                            contact_rect = cat_attack_zone.clip(enemy.get_rect())
                             contact_point = contact_rect.center
-                            e.contact_points.append(contact_point)
+                            enemy.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
                         elif isinstance(tar, Tower):
                             tower = tar
@@ -53,7 +64,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                         for enemy in enemies:
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
-                                enemy.hp -= cat.atk
+                                enemy.take_damage(cat.atk)  # 使用 take_damage 生成煙霧
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -107,7 +118,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                         if isinstance(tar, Cat):
                             c = tar
                             old_hp = c.hp
-                            c.hp -= enemy.atk
+                            c.take_damage(enemy.atk)  # 使用 take_damage 生成煙霧
                             if c.hp > 0:
                                 thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -136,13 +147,13 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                         for cat in cats:
                             if enemy_attack_zone.colliderect(cat.get_rect()):
                                 old_hp = cat.hp
-                                cat.hp -= enemy.atk
+                                cat.take_damage(enemy.atk)  # 使用 take_damage 生成煙霧
                                 if cat.hp > 0:
                                     thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)
                                     if thresholds_crossed > 0:
                                         cat.knock_back()
                                 cat.last_hp = cat.hp
-                                contact_rect = enemy_attack_zone.clip(cat.get_rect())
+                                contact_rect = cat_attack_zone.clip(cat.get_rect())
                                 contact_point = contact_rect.center
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
@@ -177,6 +188,16 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
                 else:
                     enemy.move()
 
+    # 應用震波擊退效果，所有 Cat 向後退 50 像素，持續 2 秒
+    for effect in shockwave_effects:
+        if effect.update():
+            for cat in cats:
+                if not cat.is_attacking and not getattr(cat, 'has_retreated', False):  # 僅在未後退且非攻擊中時執行
+                    cat.start_retreat(50)  # 啟動 2 秒後退 50 像素
+                    cat.anim_start_time = pygame.time.get_ticks()  # 觸發 walking 動畫
+        else:
+            shockwave_effects.remove(effect)
+
     # Centralized soul creation for enemy deaths
     new_enemies = []
     for enemy in enemies:
@@ -184,7 +205,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             new_enemies.append(enemy)
         else:
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
-            # Optional debug: print(f"Soul created for enemy at ({enemy.x}, {enemy.y})")
     enemies[:] = new_enemies
 
     # Centralized soul creation for cat deaths
@@ -194,11 +214,11 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls):
             new_cats.append(cat)
         else:
             souls.append(Soul(cat.x + cat.width // 2, cat.y))
-            # Optional debug: print(f"Soul created for cat at ({cat.x}, {cat.y})")
     cats[:] = new_cats
 
     if enemy_tower and enemy_tower.hp <= 0:
         enemy_tower.hp = 0
     if our_tower.hp <= 0:
         our_tower.hp = 0
-        
+
+    return shockwave_effects

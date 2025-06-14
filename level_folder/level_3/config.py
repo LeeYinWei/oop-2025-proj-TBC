@@ -9,8 +9,8 @@ level_config = {
             "spawn_count": 0,
             "weight": 0.4,
             "tower_hp_percent": 100,
-            "initial_delay": 2000,
-            "spawn_interval_1": 2000
+            "initial_delay": 7000,
+            "spawn_interval_1": 10000
         },
         {
             "type": "fast",
@@ -28,9 +28,9 @@ level_config = {
             "variant": "boss",
             "is_boss": True,
             "is_limited": True,
-            "spawn_count": 5,
+            "spawn_count": 1,
             "weight": 0.3,
-            "tower_hp_percent": 70,
+            "tower_hp_percent": 97,
             "initial_delay": 6000,
             "spawn_interval_1": 4000
         }

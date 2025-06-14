@@ -14,6 +14,7 @@ async def main_game_loop(screen, clock):
     cats = []
     enemies = []
     souls = []
+    shockwave_effects = []  # 僅保留 shockwave_effects
     cat_y = 450
     enemy_y = 450
     our_tower = None
@@ -69,6 +70,7 @@ async def main_game_loop(screen, clock):
                     cats = []
                     souls = []
                     enemies = []
+                    shockwave_effects = []  # 重置 shockwave_effects
                     current_budget = 1000
                     last_enemy_spawn_time = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in current_level.enemy_types}
                     last_budget_increase_time = -333
@@ -118,11 +120,13 @@ async def main_game_loop(screen, clock):
                 cat.update_status_effects(current_time)
             for enemy in enemies:
                 enemy.update_status_effects(current_time)
-            update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls)
+            shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, shockwave_effects)
             souls[:] = [soul for soul in souls if soul.update()]
             draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map)
             for soul in souls:
                 soul.draw(screen)
+            for shockwave in shockwave_effects:
+                shockwave.draw(screen)
             for cat in cats:
                 cat.draw(screen)
             for enemy in enemies:
