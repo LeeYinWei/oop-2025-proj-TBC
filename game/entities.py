@@ -106,9 +106,9 @@ class Cat:
         self.status_effects = {}
         self.status_effects_config = status_effects_config if status_effects_config is not None else {}
         self.attack_interval = attack_interval  # 動態設置攻擊間隔
-        self.done_attack = done_attack  # 是否完成攻擊
         self.has_retreated = False
         self.smoke_effects = []
+        self.done_attack = done_attack  # 是否完成攻擊
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
