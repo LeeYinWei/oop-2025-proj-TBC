@@ -121,3 +121,6 @@ oop-2025-proj-TBC/
 3. 安裝pygame
     ```bash
     pip install pygame
+4. 執行main.py
+    ```bash
+    python3 main.py
