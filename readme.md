@@ -113,8 +113,11 @@ oop-2025-proj-TBC/
    ```bash
    git clone https://github.com/yourusername/oop-2025-proj-TBC.git
    cd oop-2025-proj-TBC
-2. 安裝pygame + 設定虛擬環境（如果有意保持整潔）
+2. 設定虛擬環境（如果有意保持整潔）
     ```bash
     python -m venv venv
     source venv/bin/activate  # Linux/Mac
     venv\Scripts\activate     # Windows
+3. 安裝pygame
+    ```bash
+    pip install pygame
