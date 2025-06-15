@@ -97,6 +97,7 @@ oop-2025-proj-TBC/
 ![菜單](intro/level_selection.png "菜單畫面")
 - **戰鬥**
 到了battle畫面, 點選鍵盤上的1出擊basic, 2出擊speedy, 以此類推, 另外可以按暫停鍵暫停遊戲
+打s敵人可以賺錢
 ![戰鬥](intro/battle.png "戰鬥畫面")
 - **輸贏**
 若敵方塔血=0時, 代表我方勝利
