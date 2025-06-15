@@ -86,6 +86,10 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
     # Draw towers, cats, enemies, etc. (assuming this exists in your original code)
     # ... (rest of your existing draw_game_ui logic for towers, cats, enemies)
 
+    # Draw budget display at top-left corner
+    budget_text = font.render(f"Budget: {current_budget}", True, (0, 0, 0))
+    screen.blit(budget_text, (50, 10))  # Position at top-left, adjust y as needed
+
     # Draw pause button
     pause_rect = pygame.Rect(1100, 50, 150, 50)
     pygame.draw.rect(screen, (100, 100, 255), pause_rect)
@@ -94,9 +98,9 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
 
     # Dynamically adjust button positions with horizontal layout and row break at 5
     button_x_start = 300  # Starting x position
-    button_y_start = 50  # Starting y position
+    button_y_start = 50  # Adjusted to avoid overlapping with budget text
     button_spacing_x = 120  # Horizontal spacing between buttons
-    button_spacing_y = 70   # Vertical sliding between rows
+    button_spacing_y = 70   # Vertical spacing between rows
     max_buttons_per_row = 5  # Maximum buttons per row
 
     # Recalculate button_rects based on selected_cats with row logic
@@ -123,16 +127,16 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 color = (150, 150, 150)  # Gray out button during cooldown
             
             pygame.draw.rect(screen, color, rect)
-            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 2))
+            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 5))
 
             # Display cost below the button name
             cost_text = font.render(f"Cost: {cost}", True, (0, 0, 0))
-            screen.blit(cost_text, (rect.x + 5, rect.y + 17))
+            screen.blit(cost_text, (rect.x + 5, rect.y + 20))
 
             # Find and display the corresponding key
             key = next((k for k, v in cat_key_map.items() if v == cat_type), None)
             key_text = font.render(f"Key: {pygame.key.name(key) if key else 'N/A'}", True, (0, 0, 0)) if key else font.render("Key: N/A", True, (0, 0, 0))
-            screen.blit(key_text, (rect.x + 5, rect.y + 32))
+            screen.blit(key_text, (rect.x + 5, rect.y + 35))
 
             # Draw cooldown progress bar
             if cooldown > 0 and time_since_last_spawn < cooldown:
@@ -141,13 +145,10 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 bar_height = 10
                 bar_width = rect.width
                 bar_x = rect.x
-                bar_y = rect.y + rect.height + 20  # Adjusted to avoid overlap with cost and key text
-                # Draw gray background for the bar
+                bar_y = rect.y + rect.height + 5  # Adjusted to avoid overlap
                 pygame.draw.rect(screen, (150, 150, 150), (bar_x, bar_y, bar_width, bar_height))
-                # Draw red fill from left to right
                 fill_width = int(bar_width * cooldown_percentage)
                 pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, fill_width, bar_height))
-                # Optional: Add a black outline
                 pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 1)
 
     return pause_rect
@@ -167,14 +168,41 @@ def draw_pause_menu(screen, font):
     screen.blit(continue_text, (continue_rect.x + 50, continue_rect.y + 15))
     return end_rect, continue_rect
 
-def draw_end_screen(screen, current_level, status, end_font, font):
+def draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete=False):
+    # Draw background
     screen.blit(current_level.background, (0, 0))
+    
+    # Draw victory or defeat text
     if status == "victory":
         text = end_font.render("Victory!", True, (0, 255, 100))
-    else:
+    else:  # status == "lose"
         text = end_font.render("Defeat!", True, (255, 100, 100))
     screen.blit(text, (350, 250))
+    
+    # Draw prompt to return to level selection
     screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (350, 350))
+    
+    # Draw "Mission Complete" box for first completion of last level
+    if show_mission_complete:
+        mission_box_width = 400
+        mission_box_height = 200
+        mission_box_x = (screen.get_width() - mission_box_width) // 2
+        mission_box_y = (screen.get_height() - mission_box_height) // 2
+        mission_box_rect = pygame.Rect(mission_box_x, mission_box_y, mission_box_width, mission_box_height)
+        
+        # Draw box with border
+        pygame.draw.rect(screen, (0, 0, 0), mission_box_rect)  # Black background
+        pygame.draw.rect(screen, (255, 215, 0), mission_box_rect, 5)  # Gold border
+        
+        # Draw "Mission Complete" text
+        mission_text = font.render("Mission Complete!", True, (255, 255, 255))
+        mission_text_rect = mission_text.get_rect(center=mission_box_rect.center)
+        screen.blit(mission_text, mission_text_rect)
+        
+        # Add congratulatory message
+        congrats_text = font.render("Congratulations on completing the game!", True, (255, 255, 255))
+        congrats_text_rect = congrats_text.get_rect(center=(mission_box_rect.centerx, mission_box_rect.centery + 30))
+        screen.blit(congrats_text, congrats_text_rect)
 
 
 # 新增一個變數來儲存背景圖片
