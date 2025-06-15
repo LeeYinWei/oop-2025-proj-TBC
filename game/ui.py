@@ -2,11 +2,15 @@ import pygame
 from .entities import cat_types, cat_costs, cat_cooldowns
 
 def draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels):
-    background_color = (200, 255, 200)
-    screen.fill(background_color)
+    # 載入並縮放背景圖片
+    background_image = pygame.image.load("background/level_selection_bg.png").convert()
+    background_image = pygame.transform.scale(background_image, screen.get_size())
+    screen.blit(background_image, (0, 0))  # 畫在左上角起始點
+
     title = font.render("Select Level and Cats", True, (0, 0, 0))
     screen.blit(title, (350, 50))
     cat_rects = {}
+
     for i, level in enumerate(levels):
         rect = pygame.Rect(50, 100 + i * 60, 200, 50)
         is_playable = i == 0 or (i - 1) in completed_levels
@@ -14,18 +18,23 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
         pygame.draw.rect(screen, color, rect)
         level_text = font.render(level.name if is_playable else f"{level.name} (Locked)", True, (0, 0, 0))
         screen.blit(level_text, (rect.x + 5, rect.y + 15))
+
     for idx, cat_type in enumerate(cat_types.keys()):
         rect = pygame.Rect(300 + (idx % 5)  * 120, 100 + (idx // 5) * 60, 100, 50)
         cat_rects[cat_type] = rect
         color = (0, 255, 0) if cat_type in selected_cats else (200, 200, 200)
         pygame.draw.rect(screen, color, rect)
         screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
+
     reset_rect = pygame.Rect(50, 400, 200, 50)
     pygame.draw.rect(screen, (255, 100, 100), reset_rect)
     reset_text = font.render("Reset Progress", True, (0, 0, 0))
     screen.blit(reset_text, (reset_rect.x + 40, reset_rect.y + 15))
+
     screen.blit(font.render("Click to select level, click to toggle cats, press Enter to start", True, (0, 0, 0)), (50, 460))
+
     return cat_rects, reset_rect
+
 
 def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map):
     background_color = (200, 255, 200)
