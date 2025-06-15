@@ -46,6 +46,7 @@ class Tower:
         fill = max(0, self.hp / self.max_hp) * bar_width
         pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y - 10, bar_width, bar_height))
         pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y - 10, fill, bar_height))
+        pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y - 10, bar_width, bar_height), 1)
 
     def get_rect(self):
         return pygame.Rect(int(self.x), int(self.y), self.width, int(self.height))
