@@ -1,7 +1,7 @@
-from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect
+from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect, YManager
 import pygame
 
-def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_effects=None):
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls,cat_y_manager,enemy_y_manager, shockwave_effects=None):
     if shockwave_effects is None:
         shockwave_effects = []
 
@@ -70,17 +70,21 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                         for enemy in enemies:
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
-                                print("enemy taking damage:", enemy.hp, "->", enemy.hp - cat.atk)
+                                #print("enemy taking damage:", enemy.hp, "->", enemy.hp - cat.atk)
                                 enemy.take_damage(cat.atk)  # 使用 take_damage 生成煙霧
+                                #print("enemy hp after take_damage:", enemy.hp)
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
+                                        print("enemy knock back")
                                         enemy.knock_back()
+                                #print("enemy hp after take_damage:", enemy.hp)
                                 enemy.last_hp = enemy.hp
                                 contact_rect = cat_attack_zone.clip(enemy.get_rect())
                                 contact_point = contact_rect.center
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
+                                #print("enemy hp after attack:", enemy.hp)
                                 break
         # cat.anim_state in idle or moving                 
         elif cat.is_aoe:
@@ -93,6 +97,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
                 cat.anim_start_time = now
                 cat.last_attack_time = now
                 cat.is_attacking = True
+            elif targets and now - cat.last_attack_time < cat.attack_interval:
+                cat.anim_state = "idle"
             elif not targets:
                 cat.move()
         else:
@@ -126,6 +132,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
 
     for enemy in enemies:
         enemy_attack_zone = enemy.get_attack_zone()
+        #print("enemy anim state:", enemy.anim_state)
         if enemy.anim_state in ["windup", "attacking", "recovery"]:
             if enemy.done_attack == False:
                 enemy.done_attack = True  # 攻擊完成標誌，在./entities/enemy update_animation recovery結束後重製
@@ -185,14 +192,19 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
         elif enemy.is_aoe:
             targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+                #print(enemy.is_boss)
                 targets.append(our_tower)
+                #print("enemy tower in attack zone")
             if targets and now - enemy.last_attack_time >= enemy.attack_interval:
                 enemy.anim_state = "windup"
                 enemy.anim_start_time = now
                 enemy.last_attack_time = now
                 enemy.is_attacking = True
+            elif targets and now - enemy.last_attack_time < enemy.attack_interval:
+                enemy.anim_state = "idle"
             elif not targets:
                 enemy.move()
+                #print("enemy moving")
         else:
             target_in_range = False
             if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
@@ -236,10 +248,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
     # Centralized soul creation for enemy deaths
     new_enemies = []
     for enemy in enemies:
+        #print("enemy hp:", enemy.hp)
         if enemy.hp > 0:
             new_enemies.append(enemy)
         else:
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
+            enemy_y_manager.release_y(enemy.slot_index)
     enemies[:] = new_enemies
 
     # Centralized soul creation for cat deaths
@@ -249,6 +263,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, shockwave_e
             new_cats.append(cat)
         else:
             souls.append(Soul(cat.x + cat.width // 2, cat.y))
+            cat_y_manager.release_y(cat.slot_index)
     cats[:] = new_cats
 
     if enemy_tower and enemy_tower.hp <= 0:

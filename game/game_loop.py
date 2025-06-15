@@ -1,6 +1,6 @@
 import asyncio
 import pygame
-from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types
+from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager
 from .battle_logic import update_battle
 from .ui import draw_level_selection, draw_game_ui, draw_end_screen
 
@@ -15,8 +15,8 @@ async def main_game_loop(screen, clock):
     enemies = []
     souls = []
     shockwave_effects = []  # 僅保留 shockwave_effects
-    cat_y = 450
-    enemy_y = 450
+    #cat_y = 450
+    #enemy_y = 450
     our_tower = None
     enemy_tower = None
     last_spawn_time = {cat_type: 0 for cat_type in cat_types}
@@ -26,6 +26,8 @@ async def main_game_loop(screen, clock):
     budget_rate = 33
     status = 0
     level_start_time = 0
+    cat_y_manager = YManager(base_y=520, min_y=300, max_slots=30)
+    enemy_y_manager = YManager(base_y=490, min_y=300, max_slots=30)
     # Map keys 1-0 to up to 10 cats
     cat_key_map = {}
     for i, cat_type in enumerate(selected_cats[:10]):
@@ -80,6 +82,7 @@ async def main_game_loop(screen, clock):
             pygame.display.flip()
         elif game_state == "playing":
             current_level = levels[selected_level]
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -89,7 +92,9 @@ async def main_game_loop(screen, clock):
                         cat_type = cat_key_map[event.key]
                         if current_time - last_spawn_time[cat_type] >= cat_cooldowns[cat_type]:
                             our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
+                            cat_y, cat_slot = cat_y_manager.get_available_y()
                             cat = cat_types[cat_type](our_tower_center, cat_y)
+                            cat.slot_index = cat_slot  # 儲存它使用的 slot
                             start_x = our_tower_center - cat.width / 2
                             cat.x = start_x
                             cats.append(cat)
@@ -106,11 +111,13 @@ async def main_game_loop(screen, clock):
                     if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
                         config = current_level.enemy_configs.get(et["type"], {})
+                        enemy_y, enemy_slot = enemy_y_manager.get_available_y()
                         enemy = enemy_types[et["type"]](
                             enemy_tower_center, enemy_y,
                             is_b=et.get("is_boss", False),
                             cfg=config  # Pass the config to get multipliers
                         )
+                        enemy.slot_index = enemy_slot
                         start_x = enemy_tower_center - enemy.width / 2
                         enemy.x = start_x
                         enemies.append(enemy)
@@ -120,9 +127,10 @@ async def main_game_loop(screen, clock):
             # 更新所有角色的狀態效果
             for cat in cats:
                 cat.update_status_effects(current_time)
+            #print(f"enemies count: {len(enemies)}")
             for enemy in enemies:
                 enemy.update_status_effects(current_time)
-            shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, shockwave_effects)
+            shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, cat_y_manager, enemy_y_manager, shockwave_effects)
             souls[:] = [soul for soul in souls if soul.update()]
             draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map)
             for soul in souls:
@@ -137,21 +145,27 @@ async def main_game_loop(screen, clock):
             if enemy_tower:
                 enemy_tower.draw(screen)
             pygame.display.flip()
+
             if our_tower.hp <= 0:
                 status = "lose"
                 game_state = "end"
+                print("Our tower destroyed, game over.")
             elif enemy_tower:
                 if enemy_tower.hp <= 0:
                     status = "victory"
                     game_state = "end"
+                    print("Enemy tower destroyed, we win!")
                 elif current_level.all_limited_spawned and not any(
                     et["is_limited"] is False for et in current_level.enemy_types
                 ) and not enemies:
                     status = "victory"
                     game_state = "end"
+                    print(enemies)
+                    print("All enemies defeated, we win!")
                 elif current_level.survival_time > 0 and (current_time - level_start_time) >= current_level.survival_time * 1000:
                     status = "victory"
                     game_state = "end"
+                    print("Survival time reached, we win!")
         elif game_state == "end":
             current_level = levels[selected_level]
             draw_end_screen(screen, current_level, status, end_font, font)
