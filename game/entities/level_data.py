@@ -1,4 +1,3 @@
-# game/entities/level_data.py
 import os
 import sys
 from game.entities.level import Level
@@ -23,6 +22,7 @@ if os.path.exists(level_folder):
         if os.path.isdir(os.path.join(level_folder, level_subfolder)):
             try:
                 config = load_config(level_folder, level_subfolder)
+                level_index = extract_level_number(level_subfolder) - 1  # Convert to 0-based index
                 levels.append(Level(
                     config["name"],
                     config["enemy_types"],
@@ -33,8 +33,19 @@ if os.path.exists(level_folder):
                     config["enemy_tower"],
                     config["tower_distance"]
                 ))
+                print(f"Loaded level: {config['name']} at index {level_index}")
+            except KeyError as e:
+                print(f"Missing required config key '{e}' for level '{level_subfolder}', skipping this level")
             except Exception as e:
-                print(f"Error loading level config for '{level_subfolder}': {e}")
+                print(f"Error loading level config for '{level_subfolder}': {e}, skipping this level")
 else:
     print(f"Directory '{level_folder}' not found")
     sys.exit()
+
+# Optional: Add a function to validate levels against completed_levels (if needed elsewhere)
+def get_level_index_by_name(level_name):
+    """Return the 0-based index of a level by its name."""
+    for i, level in enumerate(levels):
+        if level.name == level_name:
+            return i
+    return -1

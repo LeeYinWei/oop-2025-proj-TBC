@@ -36,6 +36,7 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
     return cat_rects, reset_rect
 
 
+
 def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map):
     background_color = (200, 255, 200)
     screen.fill(background_color)
@@ -50,31 +51,61 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
     pause_text = font.render("Pause", True, (0, 0, 0))
     screen.blit(pause_text, (pause_rect.x + 50, pause_rect.y + 15))
 
-    # Draw cat buttons with cooldown progress bars
+    # Dynamically adjust button positions with horizontal layout and row break at 5
+    button_x_start = 300  # Starting x position
+    button_y_start = 50  # Starting y position
+    button_spacing_x = 120  # Horizontal spacing between buttons
+    button_spacing_y = 70   # Vertical spacing between rows
+    max_buttons_per_row = 5  # Maximum buttons per row
+
+    # Recalculate button_rects based on selected_cats with row logic
+    calculated_button_rects = {}
     for idx, cat_type in enumerate(selected_cats):
-        if cat_type in button_rects:
-            rect = button_rects[cat_type]
-            color = (0, 255, 0) if current_budget >= cat_costs.get(cat_type, 0) else (200, 200, 200)
-            # Draw cooldown progress bar (Battle Cats style: right to left)
+        row = idx // max_buttons_per_row
+        col = idx % max_buttons_per_row
+        rect_x = button_x_start + col * button_spacing_x
+        rect_y = button_y_start + row * button_spacing_y
+        rect = pygame.Rect(rect_x, rect_y, 100, 50)
+        calculated_button_rects[cat_type] = rect
+
+    # Draw cat buttons with cooldown progress bars, cost, and key mapping
+    for idx, cat_type in enumerate(selected_cats):
+        if cat_type in calculated_button_rects:
+            rect = calculated_button_rects[cat_type]
+            cost = cat_costs.get(cat_type, 0)
+            color = (0, 255, 0) if current_budget >= cost else (200, 200, 200)
+            
+            # Draw cooldown progress bar logic
             cooldown = cat_cooldowns.get(cat_type, 0)
             time_since_last_spawn = current_time - last_spawn_time.get(cat_type, 0)
             if cooldown > 0 and time_since_last_spawn < cooldown:
-                color = (150, 150, 150)
+                color = (150, 150, 150)  # Gray out button during cooldown
+            
             pygame.draw.rect(screen, color, rect)
             screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
 
+            # Display cost below the button name
+            cost_text = font.render(f"Cost: {cost}", True, (0, 0, 0))
+            screen.blit(cost_text, (rect.x + 5, rect.y + 30))
+
+            # Find and display the corresponding key
+            key = next((k for k, v in cat_key_map.items() if v == cat_type), None)
+            key_text = font.render(f"Key: {pygame.key.name(key) if key else 'N/A'}", True, (0, 0, 0)) if key else font.render("Key: N/A", True, (0, 0, 0))
+            screen.blit(key_text, (rect.x + 5, rect.y + 45))
+
+            # Draw cooldown progress bar
             if cooldown > 0 and time_since_last_spawn < cooldown:
                 cooldown_remaining = max(0, cooldown - time_since_last_spawn)
                 cooldown_percentage = cooldown_remaining / cooldown
                 bar_height = 10
                 bar_width = rect.width
                 bar_x = rect.x
-                bar_y = rect.y + rect.height + 2  # Place bar just below the button
+                bar_y = rect.y + rect.height + 20  # Adjusted to avoid overlap with cost and key text
                 # Draw gray background for the bar
                 pygame.draw.rect(screen, (150, 150, 150), (bar_x, bar_y, bar_width, bar_height))
-                # Draw red fill from left to right (MODIFIED LINE BELOW)
-                fill_width = int(bar_width * (cooldown_percentage)) # 注意這裡要計算「已填充」的百分比
-                pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, fill_width, bar_height)) # 這裡的 x 座標改為 bar_x
+                # Draw red fill from left to right
+                fill_width = int(bar_width * cooldown_percentage)
+                pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, fill_width, bar_height))
                 # Optional: Add a black outline
                 pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 1)
 

@@ -20,11 +20,14 @@ async def main_game_loop(screen, clock):
     save_file = "completed_levels.json"
     try:
         if os.path.exists(save_file):
-            with print(f"Loading completed levels from {save_file}"):
-                with open(save_file, "r") as f:
-                    completed_levels = set(json.load(f))
-    except Exception as e:
-        print(f"Error loading completed levels: {e}")
+            with open(save_file, "r") as f:
+                loaded_data = json.load(f)
+                if isinstance(loaded_data, list):
+                    completed_levels = set(loaded_data)
+                else:
+                    print(f"Invalid save data format in {save_file}, initializing empty set")
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        print(f"Error loading completed levels or file not found: {e}, initializing empty set")
     
     cats = []
     enemies = []
@@ -43,11 +46,10 @@ async def main_game_loop(screen, clock):
     cat_y_manager = YManager(base_y=532, min_y=300, max_slots=15)
     enemy_y_manager = YManager(base_y=500, min_y=300, max_slots=15)
     # Map keys 1-0 to up to 10 cats
-
     cat_key_map = {}
     for i, cat_type in enumerate(selected_cats[:10]):
         cat_key_map[pygame.K_1 + i] = cat_type
-    button_rects = {cat_type: pygame.Rect(50 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
+    button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}  # Moved to right side
 
     while True:
         current_time = pygame.time.get_ticks()
@@ -73,13 +75,20 @@ async def main_game_loop(screen, clock):
                             cat_key_map = {}
                             for i, cat_type in enumerate(selected_cats[:10]):
                                 cat_key_map[pygame.K_1 + i] = cat_type
-                            button_rects = {cat_type: pygame.Rect(50 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
+                            button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}  # Moved to right side
                             print(f"Updated selected_cats: {selected_cats}, cat_key_map: {cat_key_map}")
                     if reset_rect.collidepoint(pos):
                         completed_levels.clear()
                         if os.path.exists(save_file):
                             os.remove(save_file)
                             print("Progress reset to initial state")
+                        # Reinitialize save file with empty set
+                        try:
+                            with open(save_file, "w") as f:
+                                json.dump(list(completed_levels), f)
+                            print(f"Reinitialized {save_file} with empty completed levels")
+                        except Exception as e:
+                            print(f"Error reinitializing save file: {e}")
                 elif event.type == pygame.KEYDOWN:
                     print(f"Key pressed in level_selection: {pygame.key.name(event.key)}, game_state: {game_state}")
                     if event.key == pygame.K_RETURN:
@@ -123,17 +132,25 @@ async def main_game_loop(screen, clock):
                     print(f"Playing state key: {pygame.key.name(event.key)}")
                     if event.key in cat_key_map:
                         cat_type = cat_key_map[event.key]
-
-                        if current_time - last_spawn_time[cat_type] >= cat_cooldowns[cat_type]:
-                            our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
-                            cat_y, cat_slot = cat_y_manager.get_available_y()
-                            cat = cat_types[cat_type](our_tower_center, cat_y)
-                            cat.slot_index = cat_slot  # 儲存它使用的 slot
-                            start_x = our_tower_center - cat.width / 2 - 90
-                            cat.x = start_x
-                            cats.append(cat)
-                            last_spawn_time[cat_type] = current_time
-
+                        cost = cat_costs.get(cat_type, 0)
+                        cooldown = cat_cooldowns.get(cat_type, 0)
+                        print(f"Attempting to spawn {cat_type}, cost: {cost}, budget: {current_budget}, cooldown: {current_time - last_spawn_time.get(cat_type, 0)} vs {cooldown}")
+                        if current_budget >= cost:
+                            if current_time - last_spawn_time.get(cat_type, 0) >= cooldown:
+                                current_budget -= cost
+                                our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
+                                cat_y, cat_slot = cat_y_manager.get_available_y()
+                                cat = cat_types[cat_type](our_tower_center, cat_y)
+                                cat.slot_index = cat_slot  # 儲存它使用的 slot
+                                start_x = our_tower_center - cat.width / 2 - 90
+                                cat.x = start_x
+                                cats.append(cat)
+                                last_spawn_time[cat_type] = current_time
+                                print(f"Spawned {cat_type} at {cat.x}, {cat_y}")
+                            else:
+                                print(f"Cooldown not elapsed for {cat_type}")
+                        else:
+                            print(f"Insufficient budget for {cat_type}")
             if current_time - last_budget_increase_time >= 333:
                 if current_budget < total_budget_limitation:
                     current_budget = min(current_budget + budget_rate, total_budget_limitation)
