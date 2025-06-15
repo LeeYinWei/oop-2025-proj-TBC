@@ -28,5 +28,8 @@ cat_config = {
                       "cat_folder/mtank/attacking/mtank-attacking3.png"],
     "recovery_frames": ["cat_folder/mtank/attacking/mtank-attacking2.png",
                         "cat_folder/mtank/attacking/mtank-attacking1.png"],
-    "kb_frames": []
+    "kb_frames": [],
+    "ibtn_idle": "cat_folder/mtank/ibtn_idle.png",
+    "ibtn_hover": "ccat_folder/mtank/ibtn_hover.png",
+    "ibtn_pressed": "cat_folder/mtank/ibtn_pressed.png",
 }

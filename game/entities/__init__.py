@@ -16,7 +16,7 @@ from .soul import Soul
 from .tower import Tower
 
 # 匯入資料 (變數)
-from .cat_data import cat_types, cat_costs, cat_cooldowns
+from .cat_data import cat_types, cat_costs, cat_cooldowns, cat_button_images
 from .enemy_data import enemy_types
 from .level_data import levels
 

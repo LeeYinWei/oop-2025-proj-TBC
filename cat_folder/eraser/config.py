@@ -21,5 +21,8 @@ cat_config = {
     "attack_frames": [f"cat_folder/eraser/attacking/processed_frame_00{i}.png" for i in range(17, 24)],
     "recovery_frames": [f"cat_folder/eraser/attacking/processed_frame_00{i}.png" for i in range(24, 26)],
     "kb_frames": [],
-    "delta_y": -42 # 微調 y 座標
+    "delta_y": -42, # 微調 y 座標
+    "ibtn_idle": "cat_folder/eraser/ibtn_idle.png",
+    "ibtn_hover": "ccat_folder/eraser/ibtn_hover.png",
+    "ibtn_pressed": "cat_folder/eraser/ibtn_pressed.png",
 }
