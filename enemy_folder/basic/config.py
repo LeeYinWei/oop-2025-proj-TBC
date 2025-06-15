@@ -26,5 +26,6 @@ enemy_config = {
     "attack_frames": ["enemy_folder/basic/attacking/basic_enemy_attacking.png"],  # 攻擊動畫
     "recovery_frames": [],  # 無對應圖片，保持空
     "kb_frames": [],  # 無對應圖片，保持空
-    "attributes": ["紅"]  # Fixed attribute: Red, based on color (255, 0, 0)
+    "attributes": ["紅"],  # Fixed attribute: Red, based on color (255, 0, 0)
+    "reward": 105,  # 假設的獎勵值
 }

@@ -236,7 +236,7 @@ async def main_game_loop(screen, clock):
                 cat.update_status_effects(current_time)
             for enemy in enemies:
                 enemy.update_status_effects(current_time)
-            shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, cat_y_manager, enemy_y_manager, shockwave_effects)
+            shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, cat_y_manager, enemy_y_manager, shockwave_effects, current_budget)
             souls[:] = [soul for soul in souls if soul.update()]
 
             # Draw all elements
@@ -309,7 +309,7 @@ async def main_game_loop(screen, clock):
             current_level = levels[selected_level]
             is_last_level = selected_level == len(levels) - 1
             first_completion = is_last_level and (selected_level not in completed_levels)
-            print(f"End state reached for level {selected_level}, is_last_level: {is_last_level}, first_completion: {first_completion}")
+            # print(f"End state reached for level {selected_level}, is_last_level: {is_last_level}, first_completion: {first_completion}")
             
             draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete=first_completion)
             pygame.display.flip()

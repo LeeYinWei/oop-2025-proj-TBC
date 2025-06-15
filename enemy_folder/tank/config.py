@@ -19,5 +19,6 @@ enemy_config = {
     "attack_frames": ["enemy_folder/tank/attacking/tank_enemy_attacking_3.png"],
     "recovery_frames": [f"enemy_folder/tank/attacking/tank_enemy_attacking_{i}.png" for i in range(1, 3)],
     "kb_frames": ["enemy_folder/tank/walking/tank_enemy_walking_1.png"],
-    "attributes": ["古"]  # Metal and Relic, based on gray color and boss status
+    "attributes": ["古"],  # Metal and Relic, based on gray color and boss status
+    "reward": 13200,  # 假設的獎勵值
 }

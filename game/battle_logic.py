@@ -1,7 +1,7 @@
 from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect, YManager
 import pygame
 
-def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manager, enemy_y_manager, shockwave_effects=None):
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manager, enemy_y_manager, shockwave_effects=None, current_budget=0):
     if shockwave_effects is None:
         shockwave_effects = []
 
@@ -226,6 +226,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
             shockwave_effects.remove(effect)
 
     # Centralized soul creation for enemy deaths
+    # 中央處理敵人死亡和獎勵
     new_enemies = []
     for enemy in enemies:
         if enemy.hp > 0:
@@ -233,6 +234,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         else:
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
             enemy_y_manager.release_y(enemy.slot_index)
+            # 將敵人的獎勵加到 current_budget 中
+            current_budget = current_budget+enemy.reward
+            print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
     enemies[:] = new_enemies
 
     # Centralized soul creation for cat deaths

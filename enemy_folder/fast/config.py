@@ -19,5 +19,6 @@ enemy_config = {
     "attack_frames": ["enemy_folder/fast/attacking/fast_enemy_attacking_2.png"],
     "recovery_frames": ["enemy_folder/fast/attacking/fast_enemy_attacking_1.png"],
     "kb_frames": ["enemy_folder/fast/walking/fast_enemy_walking.png"],
-    "attributes": ["異", "天"]  # Alien and Angel, based on fast type and green color
+    "attributes": ["異", "天"],  # Alien and Angel, based on fast type and green color
+    "reward": 87,  # 假設的獎勵值
 }

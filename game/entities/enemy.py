@@ -18,7 +18,7 @@ class Enemy:
                 is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,
                 move_frames=None, windup_frames=None, attack_frames=None, recovery_frames=None,
                 kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0, done_attack=False):
+                attack_interval=1000, hp_multiplier=1.0, atk_multiplier=1.0, done_attack=False, reward = 5):
         self.x = x
         self.y = y-height
         self.y0 = y-height  # 儲存原始 y 座標以便恢復
@@ -84,6 +84,7 @@ class Enemy:
 
         self.done_attack = done_attack
         self.slot_index = None  # 儲存使用的 y_slot 索引
+        self.reward = reward
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:

@@ -24,7 +24,8 @@ if os.path.exists(enemy_folder):
                     recovery_duration=cfg["recovery_duration"],
                     attack_interval=cfg.get("attack_interval", 1000),
                     hp_multiplier=cfg.get("hp_multiplier", 1.0),
-                    atk_multiplier=cfg.get("atk_multiplier", 1.0)
+                    atk_multiplier=cfg.get("atk_multiplier", 1.0),
+                    reward= cfg.get("reward", 0),
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")

@@ -17,7 +17,7 @@ level_config = {
             "variant": "standard",
             "is_boss": False,
             "is_limited": True,
-            "spawn_count": 5,
+            "spawn_count": 10,
             "weight": 0.3,
             "tower_hp_percent": 90,
             "initial_delay": 5000,
@@ -26,7 +26,7 @@ level_config = {
         {
             "type": "tank",
             "variant": "boss",
-            "is_boss": True,
+            "is_boss": False,
             "is_limited": True,
             "spawn_count": 1,
             "weight": 0.2,

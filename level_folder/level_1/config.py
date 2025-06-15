@@ -17,7 +17,7 @@ level_config = {
         {
             "type": "basic",
             "variant": "version2",
-            "is_boss": True,
+            "is_boss": False,
             "is_limited": True,
             "spawn_count": 2,
             "weight": 0.3,
