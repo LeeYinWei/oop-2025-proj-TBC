@@ -1,3 +1,4 @@
 # Python specific
 *.pyc
 __pycache__/
+completed_levels.json
