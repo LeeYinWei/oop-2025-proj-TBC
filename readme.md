@@ -104,9 +104,6 @@ oop-2025-proj-TBC/
 ![win](intro/victory.png "勝利畫面")
 ![loss](intro/loss.png "失敗畫面")
 ## 需求與安裝
-
-!pip install pygame
-
 ### 必要依賴
 - Python 3.8 或更高版本
 - Pygame 2.0 或更高版本
@@ -116,3 +113,8 @@ oop-2025-proj-TBC/
    ```bash
    git clone https://github.com/yourusername/oop-2025-proj-TBC.git
    cd oop-2025-proj-TBC
+2. 安裝pygame + 設定虛擬環境（如果有意保持整潔）
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # Linux/Mac
+    venv\Scripts\activate     # Windows
