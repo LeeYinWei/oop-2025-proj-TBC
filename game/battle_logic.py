@@ -52,13 +52,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             enemy.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
                             
-                            # 碰撞時觸發震波 (並沒有)
-                            # if enemy.is_boss:
-                            #     shockwave_x = contact_point[0]
-                            #     shockwave_y = contact_point[1]
-                            #     shockwave = ShockwaveEffect(shockwave_x, shockwave_y, now)
-                            #     shockwave_effects.append(shockwave)
-                            #     print(f"Shockwave triggered at ({shockwave_x}, {shockwave_y}) due to boss collision with {enemy}")
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.hp -= cat.atk
@@ -89,14 +82,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
                                 
-                                # 碰撞時觸發震波 (輔助效果)
-                                # if enemy.is_boss:
-                                #     shockwave_x = contact_point[0]
-                                #     shockwave_y = contact_point[1]
-                                #     shockwave = ShockwaveEffect(shockwave_x, shockwave_y, now)
-                                #     shockwave_effects.append(shockwave)
-                                #     print(f"Shockwave triggered at ({shockwave_x}, {shockwave_y}) due to boss collision with {enemy}")
-                                # break
         elif cat.is_aoe:
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
             if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
