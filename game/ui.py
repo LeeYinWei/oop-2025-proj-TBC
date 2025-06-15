@@ -55,7 +55,7 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
         color = (0, 255, 0) if cat_type in selected_cats else (200, 200, 200)
         pygame.draw.rect(screen, color, rect)
         # 貓咪按鈕的文字顏色也建議用對比色，例如黑色背景的圖上用白色
-        print(f"Drawing cat button for {cat_type} at {rect.topleft}")  # Debugging line
+        #print(f"Drawing cat button for {cat_type} at {rect.topleft}")  # Debugging line
         screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
         cost = cat_costs.get(cat_type, 0)
         cost_text = font.render(f"Cost: {cost}", True, (0, 0, 0))

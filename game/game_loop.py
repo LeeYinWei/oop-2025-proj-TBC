@@ -136,7 +136,7 @@ async def main_game_loop(screen, clock):
                         if rect.collidepoint(pos):
                             if cat_type in selected_cats and len(selected_cats) > 1:
                                 selected_cats.remove(cat_type)
-                            elif len(selected_cats) < 10:
+                            elif cat_type not in selected_cats and len(selected_cats) < 10:
                                 selected_cats.append(cat_type)
                             # 重新生成 cat_key_map 和 button_rects
                             cat_key_map = {}
