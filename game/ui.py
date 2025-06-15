@@ -123,16 +123,16 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 color = (150, 150, 150)  # Gray out button during cooldown
             
             pygame.draw.rect(screen, color, rect)
-            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
+            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 2))
 
             # Display cost below the button name
             cost_text = font.render(f"Cost: {cost}", True, (0, 0, 0))
-            screen.blit(cost_text, (rect.x + 5, rect.y + 30))
+            screen.blit(cost_text, (rect.x + 5, rect.y + 17))
 
             # Find and display the corresponding key
             key = next((k for k, v in cat_key_map.items() if v == cat_type), None)
             key_text = font.render(f"Key: {pygame.key.name(key) if key else 'N/A'}", True, (0, 0, 0)) if key else font.render("Key: N/A", True, (0, 0, 0))
-            screen.blit(key_text, (rect.x + 5, rect.y + 45))
+            screen.blit(key_text, (rect.x + 5, rect.y + 32))
 
             # Draw cooldown progress bar
             if cooldown > 0 and time_since_last_spawn < cooldown:
