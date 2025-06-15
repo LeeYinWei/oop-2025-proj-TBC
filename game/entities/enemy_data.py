@@ -1,3 +1,4 @@
+# enemy_data.py
 import os
 import sys
 from game.entities.enemy import Enemy
@@ -11,9 +12,10 @@ if os.path.exists(enemy_folder):
         if os.path.isdir(os.path.join(enemy_folder, enemy_type)):
             try:
                 config = load_config(enemy_folder, enemy_type)
-                enemy_types[enemy_type] = lambda x, y, is_b, cfg=config: Enemy(
+                enemy_types[enemy_type] = lambda x, y, is_boss=False, cfg=config: Enemy(
                     x, y, cfg["hp"], cfg["speed"], cfg["color"], cfg["attack_range"], cfg["is_aoe"],
-                    is_boss=cfg.get("is_boss", False), is_b=is_b, atk=cfg["atk"], kb_limit=cfg["kb_limit"],
+                    is_boss=is_boss,  # 使用 is_boss 替代 is_b
+                    atk=cfg["atk"], kb_limit=cfg["kb_limit"],
                     width=cfg["width"], height=cfg["height"],
                     idle_frames=cfg.get("idle_frames"), move_frames=cfg.get("move_frames"),
                     windup_frames=cfg.get("windup_frames"), attack_frames=cfg.get("attack_frames"),

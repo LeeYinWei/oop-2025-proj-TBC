@@ -39,14 +39,12 @@ async def main_game_loop(screen, clock):
     total_budget_limitation = 16500
     current_budget = 1000
     budget_rate = 33
-    status = 0
+    status = None
     level_start_time = 0
 
     cat_y_manager = YManager(base_y=532, min_y=300, max_slots=15)
     enemy_y_manager = YManager(base_y=500, min_y=300, max_slots=15)
-    cat_key_map = {}
-    for i, cat_type in enumerate(selected_cats[:10]):
-        cat_key_map[pygame.K_1 + i] = cat_type
+    cat_key_map = {pygame.K_1 + i: cat_type for i, cat_type in enumerate(selected_cats[:10])}
     button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
 
     # Intro animation variables
@@ -116,10 +114,8 @@ async def main_game_loop(screen, clock):
                                 selected_cats.remove(cat_type)
                             elif cat_type not in selected_cats and len(selected_cats) < 10:
                                 selected_cats.append(cat_type)
-                            cat_key_map = {}
-                            for i, cat_type_selected in enumerate(selected_cats[:10]):
-                                cat_key_map[pygame.K_1 + i] = cat_type_selected
-                            button_rects = {cat_type_selected: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type_selected in enumerate(selected_cats)}
+                            cat_key_map = {pygame.K_1 + i: cat_type for i, cat_type in enumerate(selected_cats[:10])}
+                            button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
                             print(f"Updated selected_cats: {selected_cats}, cat_key_map: {cat_key_map}")
                     if reset_rect.collidepoint(pos):
                         completed_levels.clear()
@@ -154,10 +150,9 @@ async def main_game_loop(screen, clock):
                                 enemies.clear()
                                 shockwave_effects.clear()
                                 current_budget = 1000
-                                last_enemy_spawn_time = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in current_level.enemy_types}
-                                last_budget_increase_time = -333
+                                last_budget_increase_time = current_time - 333  # 確保第一個增益立即觸發
                                 last_spawn_time = {cat_type: 0 for cat_type in cat_types}
-                                status = 0
+                                status = None
                                 level_start_time = current_time
                                 print(f"Starting level: {current_level.name}, game_state now: {game_state}")
                             else:
@@ -208,13 +203,23 @@ async def main_game_loop(screen, clock):
                 key = (et["type"], et.get("variant", "default"))
                 if (not et.get("is_limited", False) or current_level.spawned_counts.get(key, 0) < et.get("spawn_count", 0)) and tower_hp_percent <= et.get("tower_hp_percent", 100):
                     interval = et.get("spawn_interval_1", current_level.spawn_interval)
-                    if current_time - current_level.last_spawn_times.get(key, 0) >= interval:
+                    initial_delay = et.get("initial_delay", 0)
+                    if current_time - current_level.last_spawn_times.get(key, 0) >= interval and current_time >= initial_delay:
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
-                        config = current_level.enemy_configs.get(et["type"], {})
+                        config = {
+                            "hp": 100, "speed": 1, "atk": 10, "attack_range": 50,
+                            "width": 50, "height": 50, "hp_multiplier": et.get("hp_multiplier", 1.0),
+                            "atk_multiplier": et.get("damage_multiplier", 1.0), "kb_limit": 1,
+                            "attack_interval": 1000, "windup_duration": 200, "attack_duration": 100,
+                            "recovery_duration": 50, "is_aoe": et.get("is_aoe", False),
+                            "color": (255, 0, 0), "idle_frames": [], "move_frames": [],
+                            "windup_frames": [], "attack_frames": [], "recovery_frames": [], "kb_frames": []
+                        }
+                        config.update(current_level.enemy_configs.get(et["type"], {}))
                         enemy_y, enemy_slot = enemy_y_manager.get_available_y()
                         enemy = enemy_types[et["type"]](
                             enemy_tower_center, enemy_y,
-                            is_b=et.get("is_boss", False),
+                            is_boss=et.get("is_boss", False),  # 移除 enemy_type，依賴 lambda 或類映射
                             cfg=config
                         )
                         enemy.slot_index = enemy_slot
@@ -222,7 +227,7 @@ async def main_game_loop(screen, clock):
                         enemy.x = start_x
                         enemies.append(enemy)
                         current_level.spawned_counts[key] += 1
-                        current_level.last_spawn_times[key] = current_time
+                        current_level.last_spawn_times[key] = current_time  
 
             current_level.all_limited_spawned = current_level.check_all_limited_spawned()
 
@@ -254,29 +259,28 @@ async def main_game_loop(screen, clock):
                 status = "lose"
                 game_state = "end"
                 print("Our tower destroyed, game over.")
-            elif enemy_tower:
-                if enemy_tower.hp <= 0:
-                    status = "victory"
-                    game_state = "end"
-                    completed_levels.add(selected_level)
-                    try:
-                        with open(save_file, "w") as f:
-                            json.dump(list(completed_levels), f)
-                    except Exception as e:
-                        print(f"Error saving completed levels: {e}")
-                    print("Enemy tower destroyed, we win!")
-                # elif current_level.all_limited_spawned and not any(
-                #     et["is_limited"] is False for et in current_level.enemy_types
-                # ) and not enemies:
-                #     status = "victory"
-                #     game_state = "end"
-                #     completed_levels.add(selected_level)
-                #     try:
-                #         with open(save_file, "w") as f:
-                #             json.dump(list(completed_levels), f)
-                #     except Exception as e:
-                #         print(f"Error saving completed levels: {e}")
-                #     print("All enemies defeated, we win!")
+            elif enemy_tower and enemy_tower.hp <= 0:
+                status = "victory"
+                game_state = "end"
+                completed_levels.add(selected_level - 1)  # 調整為 0-based 索引
+                try:
+                    with open(save_file, "w") as f:
+                        json.dump(list(completed_levels), f)
+                except Exception as e:
+                    print(f"Error saving completed levels: {e}")
+                print("Enemy tower destroyed, we win!")
+            elif current_level.all_limited_spawned and not any(
+                not et.get("is_limited", False) for et in current_level.enemy_types
+            ) and not enemies:
+                status = "victory"
+                game_state = "end"
+                completed_levels.add(selected_level - 1)  # 調整為 0-based 索引
+                try:
+                    with open(save_file, "w") as f:
+                        json.dump(list(completed_levels), f)
+                except Exception as e:
+                    print(f"Error saving completed levels: {e}")
+                print("All enemies defeated, we win!")
 
         elif game_state == "paused":
             end_rect, continue_rect = draw_pause_menu(screen, font)
@@ -301,15 +305,11 @@ async def main_game_loop(screen, clock):
                         game_state = "playing"
                         print("Resuming battle")
 
-        # game/game_loop.py (部分修改，僅顯示 end 狀態相關內容)
         elif game_state == "end":
             current_level = levels[selected_level]
-            # Check if this is the first completion of the last level
             is_last_level = selected_level == len(levels) - 1
-            print(f"End state reached for level {selected_level}, is_last_level: {is_last_level}")
-            # Determine if this is the first completion of the last level
-
-            first_completion = is_last_level and (selected_level + 1) not in completed_levels
+            first_completion = is_last_level and (selected_level not in completed_levels)
+            print(f"End state reached for level {selected_level}, is_last_level: {is_last_level}, first_completion: {first_completion}")
             
             draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete=first_completion)
             pygame.display.flip()
@@ -321,13 +321,16 @@ async def main_game_loop(screen, clock):
                     game_state = "level_selection"
                     our_tower = None
                     enemy_tower = None
-                    # Save progress after key press to ensure display is shown
+                    cats.clear()
+                    enemies.clear()
+                    souls.clear()
+                    shockwave_effects.clear()
+                    current_budget = 1000
                     if first_completion:
                         completed_levels.add(selected_level)
                         try:
                             with open(save_file, "w") as f:
                                 json.dump(list(completed_levels), f)
-                            print(f"First completion of last level saved: {selected_level}")
                         except Exception as e:
                             print(f"Error saving completed levels: {e}")
 

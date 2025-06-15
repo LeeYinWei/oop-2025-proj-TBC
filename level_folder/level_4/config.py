@@ -37,8 +37,8 @@ level_config = {
             "tower_hp_percent": 100,
             "initial_delay": 6000,
             "spawn_interval_1": 4000,
-            "hp_multiplier": 50,
-            "damage_multiplier": 50,
+            "hp_multiplier": 10,
+            "damage_multiplier": 10,
         }
     ],
     "spawn_interval": 2000,
