@@ -40,8 +40,8 @@ async def main_game_loop(screen, clock):
     status = 0
     level_start_time = 0
 
-    cat_y_manager = YManager(base_y=532, min_y=300, max_slots=30)
-    enemy_y_manager = YManager(base_y=500, min_y=300, max_slots=30)
+    cat_y_manager = YManager(base_y=532, min_y=300, max_slots=15)
+    enemy_y_manager = YManager(base_y=500, min_y=300, max_slots=15)
     # Map keys 1-0 to up to 10 cats
 
     cat_key_map = {}
