@@ -46,12 +46,14 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
         if cat_type in button_rects:
             rect = button_rects[cat_type]
             color = (0, 255, 0) if current_budget >= cat_costs.get(cat_type, 0) else (200, 200, 200)
-            pygame.draw.rect(screen, color, rect)
-            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
-
             # Draw cooldown progress bar (Battle Cats style: right to left)
             cooldown = cat_cooldowns.get(cat_type, 0)
             time_since_last_spawn = current_time - last_spawn_time.get(cat_type, 0)
+            if cooldown > 0 and time_since_last_spawn < cooldown:
+                color = (150, 150, 150)
+            pygame.draw.rect(screen, color, rect)
+            screen.blit(font.render(cat_type, True, (0, 0, 0)), (rect.x + 5, rect.y + 15))
+
             if cooldown > 0 and time_since_last_spawn < cooldown:
                 cooldown_remaining = max(0, cooldown - time_since_last_spawn)
                 cooldown_percentage = cooldown_remaining / cooldown
