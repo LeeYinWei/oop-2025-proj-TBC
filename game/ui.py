@@ -61,9 +61,9 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 bar_y = rect.y + rect.height + 2  # Place bar just below the button
                 # Draw gray background for the bar
                 pygame.draw.rect(screen, (150, 150, 150), (bar_x, bar_y, bar_width, bar_height))
-                # Draw red fill from right to left
-                fill_width = int(bar_width * cooldown_percentage)
-                pygame.draw.rect(screen, (255, 0, 0), (bar_x + bar_width - fill_width, bar_y, fill_width, bar_height))
+                # Draw red fill from left to right (MODIFIED LINE BELOW)
+                fill_width = int(bar_width * (cooldown_percentage)) # 注意這裡要計算「已填充」的百分比
+                pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, fill_width, bar_height)) # 這裡的 x 座標改為 bar_x
                 # Optional: Add a black outline
                 pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 1)
 
