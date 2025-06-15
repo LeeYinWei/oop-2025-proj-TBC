@@ -5,13 +5,15 @@ import asyncio
 import pygame
 from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager
 from .battle_logic import update_battle
-from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen
+from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen
+# game/game_loop.py
+# ... (previous imports and initial code remain the same)
 
 async def main_game_loop(screen, clock):
     FPS = 60
     font = pygame.font.SysFont(None, 24)
     end_font = pygame.font.SysFont(None, 96)
-    game_state = "level_selection"
+    game_state = "intro"  # Changed to start with intro
     selected_level = 0
     selected_cats = list(cat_types.keys())[:2]  # Initial selection (e.g., first two cat types)
     
@@ -51,32 +53,98 @@ async def main_game_loop(screen, clock):
         cat_key_map[pygame.K_1 + i] = cat_type
     button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}  # Moved to right side
 
+    # Intro animation variables
+    intro_start_time = pygame.time.get_ticks()
+    intro_duration = 100000  # Increased to 10 seconds for slower movement
+    y_offset = screen.get_height()  # Start from bottom
+
+    # 淡入效果的持續時間和當前透明度
+    fade_in_duration = 5000  # 5秒淡入
+    current_fade_alpha = 0 # 從完全透明開始
+
     while True:
         current_time = pygame.time.get_ticks()
-        if game_state == "level_selection":
-            cat_rects, reset_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
+        if game_state == "intro":
+            # 清除螢幕 (每次繪圖前都要做)
+            screen.fill((0, 0, 0))
+
+            # 計算淡入透明度
+            if current_time - intro_start_time < fade_in_duration:
+                fade_progress = (current_time - intro_start_time) / fade_in_duration
+                current_fade_alpha = int(255 * fade_progress)
+            else:
+                current_fade_alpha = 255 # 淡入完成
+
+            # 計算文字滾動進度
+            text_scroll_start_time = intro_start_time + fade_in_duration # 文字在圖片淡入後開始滾動
+            if current_time >= text_scroll_start_time:
+                text_progress_time = current_time - text_scroll_start_time
+                text_scroll_duration = intro_duration - fade_in_duration # 故事文字滾動的剩餘時間
+                
+                # 避免除以零
+                if text_scroll_duration <= 0:
+                    text_scroll_progress = 1.0
+                else:
+                    text_scroll_progress = min(1.0, text_progress_time / text_scroll_duration)
+                
+                # Ease-out effect for smoother sliding
+                y_offset = screen.get_height() * (1 - text_scroll_progress * text_scroll_progress)
+            else:
+                y_offset = screen.get_height() # 文字在淡入階段保持在底部
+
+            # 繪製開場畫面，傳入淡入透明度
+            skip_rect = draw_intro_screen(screen, font, y_offset, current_fade_alpha)
+            
+            pygame.display.flip()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     pos = event.pos
+                    if skip_rect.collidepoint(pos):
+                        game_state = "level_selection"
+                        print("Skipped intro")
+            
+            # Intro animation total duration check
+            if current_time - intro_start_time >= intro_duration:
+                game_state = "level_selection"
+                print("Intro animation completed")
+        elif game_state == "level_selection":
+            # --- START MODIFICATION ---
+            # 1. 確保每一幀都清除螢幕，避免殘影
+            screen.fill((0, 0, 0))
+
+            # 2. 修改 draw_level_selection 的返回值，以接收 quit_rect
+            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
+            # --- END MODIFICATION ---
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    # 處理關卡選擇
                     for i, level in enumerate(levels):
                         rect = pygame.Rect(50, 100 + i * 60, 200, 50)
                         if rect.collidepoint(pos):
                             if i == 0 or (i - 1) in completed_levels:
                                 selected_level = i
                                 print(f"Selected level: {selected_level} ({levels[selected_level].name if i < len(levels) else 'Invalid'})")
+                    # 處理貓咪選擇
                     for cat_type, rect in cat_rects.items():
                         if rect.collidepoint(pos):
                             if cat_type in selected_cats and len(selected_cats) > 1:
                                 selected_cats.remove(cat_type)
                             elif len(selected_cats) < 10:
                                 selected_cats.append(cat_type)
+                            # 重新生成 cat_key_map 和 button_rects
                             cat_key_map = {}
-                            for i, cat_type in enumerate(selected_cats[:10]):
-                                cat_key_map[pygame.K_1 + i] = cat_type
-                            button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}  # Moved to right side
+                            for i, cat_type_selected in enumerate(selected_cats[:10]): # 使用 cat_type_selected 避免與外部 cat_type 混淆
+                                cat_key_map[pygame.K_1 + i] = cat_type_selected
+                            button_rects = {cat_type_selected: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type_selected in enumerate(selected_cats)}
                             print(f"Updated selected_cats: {selected_cats}, cat_key_map: {cat_key_map}")
+                    # 處理重置進度按鈕
                     if reset_rect.collidepoint(pos):
                         completed_levels.clear()
                         if os.path.exists(save_file):
@@ -89,6 +157,13 @@ async def main_game_loop(screen, clock):
                             print(f"Reinitialized {save_file} with empty completed levels")
                         except Exception as e:
                             print(f"Error reinitializing save file: {e}")
+                    # --- START MODIFICATION ---
+                    # 3. 新增處理 Quit 按鈕點擊的邏輯
+                    if quit_rect.collidepoint(pos):
+                        print("Quit button clicked. Exiting game.")
+                        return # 點擊 Quit 按鈕時，直接從 main_game_loop 返回，結束遊戲
+                    # --- END MODIFICATION ---
+
                 elif event.type == pygame.KEYDOWN:
                     print(f"Key pressed in level_selection: {pygame.key.name(event.key)}, game_state: {game_state}")
                     if event.key == pygame.K_RETURN:
@@ -260,3 +335,6 @@ async def main_game_loop(screen, clock):
                     our_tower = None
                     enemy_tower = None
         await asyncio.sleep(1 / FPS)
+
+
+        
