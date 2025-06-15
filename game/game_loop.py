@@ -39,7 +39,7 @@ async def main_game_loop(screen, clock):
     budget_rate = 33
     status = 0
     level_start_time = 0
-    cat_y_manager = YManager(base_y=520, min_y=300, max_slots=30)
+    cat_y_manager = YManager(base_y=525, min_y=300, max_slots=30)
     enemy_y_manager = YManager(base_y=490, min_y=300, max_slots=30)
     cat_key_map = {}
     for i, cat_type in enumerate(selected_cats[:10]):
