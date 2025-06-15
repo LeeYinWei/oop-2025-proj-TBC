@@ -7,9 +7,9 @@ cat_config = {
     "is_aoe": True,
     "kb_limit": 3,
     "cooldown": 1000,
-    "cost": 150,
-    "width": 100,
-    "height": 100,
+    "cost": 80,
+    "width":80,
+    "height": 150,
     "windup_duration": 200,
     "attack_duration": 100,
     "recovery_duration": 200,
@@ -20,5 +20,6 @@ cat_config = {
         +[f"cat_folder/eraser/attacking/processed_frame_00{i}.png" for i in range(10, 17)],
     "attack_frames": [f"cat_folder/eraser/attacking/processed_frame_00{i}.png" for i in range(17, 24)],
     "recovery_frames": [f"cat_folder/eraser/attacking/processed_frame_00{i}.png" for i in range(24, 26)],
-    "kb_frames": []
+    "kb_frames": [],
+    "delta_y": -42 # 微調 y 座標
 }

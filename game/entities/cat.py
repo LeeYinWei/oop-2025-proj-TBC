@@ -15,10 +15,10 @@ class Cat:
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, done_attack=False):
+                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, delta_y=0):
         self.x = x
-        self.y = y-height  # 將 y 座標設置為底部對齊
-        self.y0 = y-height
+        self.y = y-height+delta_y  # 將 y 座標設置為底部對齊
+        self.y0 = y-height+delta_y
         self.hp = hp
         self.max_hp = hp
         self.atk = atk
@@ -83,7 +83,7 @@ class Cat:
         self.has_retreated = False  # 添加後退標記，預設為 False
         self.smoke_effects = []  # 儲存煙霧特效實例
 
-        self.done_attack = done_attack
+        self.done_attack = False
         self.slot_index = None  # 儲存使用的 y_slot 索引
 
     def move(self):

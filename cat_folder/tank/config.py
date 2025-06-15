@@ -26,5 +26,6 @@ cat_config = {
                       "cat_folder/tank/attacking/tank-attacking3.png"],
     "recovery_frames": ["cat_folder/tank/attacking/tank-attacking2.png",
                         "cat_folder/tank/attacking/tank-attacking1.png"],
-    "kb_frames": []
+    "kb_frames": [],
+    "delta_y": 7  # 微調 y 座標
 }
