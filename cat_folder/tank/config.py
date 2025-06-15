@@ -27,5 +27,8 @@ cat_config = {
     "recovery_frames": ["cat_folder/tank/attacking/tank-attacking2.png",
                         "cat_folder/tank/attacking/tank-attacking1.png"],
     "kb_frames": [],
-    "delta_y": 7  # 微調 y 座標
+    "delta_y": 7,  # 微調 y 座標
+    "ibtn_idle": "cat_folder/tank/ibtn_idle.png",
+    "ibtn_hover": "ccat_folder/tank/ibtn_hover.png",
+    "ibtn_pressed": "cat_folder/tank/ibtn_pressed.png",
 }

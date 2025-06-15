@@ -24,5 +24,8 @@ cat_config = {
     "attack_frames": ["cat_folder/basic/attacking/basic_snail_attcking3.png",],
     "recovery_frames": [ "cat_folder/basic/attacking/basic_snail_attcking2.png",
                         "cat_folder/basic/attacking/basic_snail_attcking1.png"],
-    "kb_frames": ["cat_folder/basic/attacking/basic_snail.png"]
+    "kb_frames": ["cat_folder/basic/attacking/basic_snail.png"],
+    "ibtn_idle": "cat_folder/basic/ibtn_idle.png",
+    "ibtn_hover": "ccat_folder/basic/ibtn_hover.png",
+    "ibtn_pressed": "cat_folder/basic/ibtn_pressed.png",
 }

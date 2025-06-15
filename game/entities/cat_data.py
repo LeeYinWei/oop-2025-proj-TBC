@@ -2,11 +2,18 @@ import os
 import sys
 from game.entities.cat import Cat
 from game.config_loader import load_config
+from collections import defaultdict
 
 
 cat_types = {}
 cat_cooldowns = {}
 cat_costs = {}
+cat_button_images = defaultdict(lambda: {
+    "idle": None,
+    "hover": None,
+    "pressed": None
+})
+
 cat_folder = "cat_folder"
 
 if os.path.exists(cat_folder):
@@ -30,6 +37,9 @@ if os.path.exists(cat_folder):
                 )
                 cat_cooldowns[cat_type] = config["cooldown"]
                 cat_costs[cat_type] = config["cost"]
+                cat_button_images[cat_type]["idle"] = config.get("ibtn_idle")
+                cat_button_images[cat_type]["hover"] = config.get("ibtn_hover")
+                cat_button_images[cat_type]["pressed"] = config.get("ibtn_pressed")
             except Exception as e:
                 print(f"Error loading cat config for '{cat_type}': {e}")
 else:

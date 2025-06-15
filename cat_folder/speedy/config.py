@@ -24,5 +24,8 @@ cat_config = {
     "attack_frames": ["cat_folder/speedy/attacking/speedy-attacking3.png"],
     "recovery_frames": ["cat_folder/speedy/attacking/speedy-attacking2.png",
                         "cat_folder/speedy/attacking/speedy-attacking1.png"],
-    "kb_frames": ["cat_folder/speedy/walking/speedy.png"]
+    "kb_frames": ["cat_folder/speedy/walking/speedy.png"],
+    "ibtn_idle": "cat_folder/speedy/ibtn_idle.png",
+    "ibtn_hover": "ccat_folder/speedy/ibtn_hover.png",
+    "ibtn_pressed": "cat_folder/speedy/ibtn_pressed.png",
 }
