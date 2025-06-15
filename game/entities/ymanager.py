@@ -9,7 +9,7 @@ class YManager:
     def calculate_y(self, index):
         # 使用類似等比或反比縮小距離，這裡用簡單對數為例
         import math
-        y = self.base_y-5*(index)**0.5
+        y = self.base_y-4*(index)**0.5
         return max(self.min_y, y)
 
     def get_available_y(self):

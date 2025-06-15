@@ -26,8 +26,8 @@ async def main_game_loop(screen, clock):
     budget_rate = 33
     status = 0
     level_start_time = 0
-    cat_y_manager = YManager(base_y=525, min_y=300, max_slots=30)
-    enemy_y_manager = YManager(base_y=490, min_y=300, max_slots=30)
+    cat_y_manager = YManager(base_y=532, min_y=300, max_slots=30)
+    enemy_y_manager = YManager(base_y=500, min_y=300, max_slots=30)
     # Map keys 1-0 to up to 10 cats
     cat_key_map = {}
     for i, cat_type in enumerate(selected_cats[:10]):
@@ -95,7 +95,7 @@ async def main_game_loop(screen, clock):
                             cat_y, cat_slot = cat_y_manager.get_available_y()
                             cat = cat_types[cat_type](our_tower_center, cat_y)
                             cat.slot_index = cat_slot  # 儲存它使用的 slot
-                            start_x = our_tower_center - cat.width / 2
+                            start_x = our_tower_center - cat.width / 2 - 90
                             cat.x = start_x
                             cats.append(cat)
                             last_spawn_time[cat_type] = current_time
@@ -118,7 +118,7 @@ async def main_game_loop(screen, clock):
                             cfg=config  # Pass the config to get multipliers
                         )
                         enemy.slot_index = enemy_slot
-                        start_x = enemy_tower_center - enemy.width / 2
+                        start_x = enemy_tower_center - enemy.width / 2 + 50
                         enemy.x = start_x
                         enemies.append(enemy)
                         current_level.spawned_counts[key] += 1
@@ -133,6 +133,9 @@ async def main_game_loop(screen, clock):
             shockwave_effects = update_battle(cats, enemies, our_tower, enemy_tower, current_time, souls, cat_y_manager, enemy_y_manager, shockwave_effects)
             souls[:] = [soul for soul in souls if soul.update()]
             draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map)
+            our_tower.draw(screen)
+            if enemy_tower:
+                enemy_tower.draw(screen)
             for soul in souls:
                 soul.draw(screen)
             for shockwave in shockwave_effects:
@@ -141,9 +144,7 @@ async def main_game_loop(screen, clock):
                 cat.draw(screen)
             for enemy in enemies:
                 enemy.draw(screen)
-            our_tower.draw(screen)
-            if enemy_tower:
-                enemy_tower.draw(screen)
+            
             pygame.display.flip()
 
             if our_tower.hp <= 0:
