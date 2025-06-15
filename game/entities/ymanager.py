@@ -18,7 +18,8 @@ class YManager:
                 self.occupied.add(i)
                 print(f"YManager: Allocated slot {i} at y={self.calculate_y(i)}")
                 return self.calculate_y(i), i
-        return self.min_y, -1  # fallback
+        return self.calculate_y(self.max_slots-1), -1  # fallback
 
     def release_y(self, index):
         self.occupied.discard(index)
+        print(f"YManager: Released slot {index}")
