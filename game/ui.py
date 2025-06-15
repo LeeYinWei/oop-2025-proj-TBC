@@ -15,7 +15,7 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
         level_text = font.render(level.name if is_playable else f"{level.name} (Locked)", True, (0, 0, 0))
         screen.blit(level_text, (rect.x + 5, rect.y + 15))
     for idx, cat_type in enumerate(cat_types.keys()):
-        rect = pygame.Rect(300 + idx * 120, 100, 100, 50)
+        rect = pygame.Rect(300 + (idx % 5)  * 120, 100 + (idx // 5) * 60, 100, 50)
         cat_rects[cat_type] = rect
         color = (0, 255, 0) if cat_type in selected_cats else (200, 200, 200)
         pygame.draw.rect(screen, color, rect)
