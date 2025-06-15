@@ -1,19 +1,19 @@
 level_config = {
     "name": "Level 4",
     "enemy_types": [
-        {
-            "type": "basic",
-            "variant": "normal",
-            "is_boss": False,
-            "is_limited": False,
-            "spawn_count": 0,
-            "weight": 0.4,
-            "tower_hp_percent": 100,
-            "initial_delay": 7000,
-            "spawn_interval_1": 10000,
-            "hp_multiplier": 1.0,
-            "damage_multiplier": 1.0,
-        },
+        # {
+        #     "type": "basic",
+        #     "variant": "normal",
+        #     "is_boss": False,
+        #     "is_limited": False,
+        #     "spawn_count": 0,
+        #     "weight": 0.4,
+        #     "tower_hp_percent": 100,
+        #     "initial_delay": 7000,
+        #     "spawn_interval_1": 10000,
+        #     "hp_multiplier": 1.0,
+        #     "damage_multiplier": 1.0,
+        # },
         # {
         #     "type": "fast",
         #     "variant": "standard",
@@ -37,8 +37,8 @@ level_config = {
             "tower_hp_percent": 100,
             "initial_delay": 6000,
             "spawn_interval_1": 4000,
-            "hp_multiplier": 1.5,
-            "damage_multiplier": 1.2,
+            "hp_multiplier": 50,
+            "damage_multiplier": 50,
         }
     ],
     "spawn_interval": 2000,

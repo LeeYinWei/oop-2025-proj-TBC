@@ -6,7 +6,7 @@ enemy_config = {
     "color": (128, 128, 128),
     "attack_range": 200,
     "is_aoe": True,
-    "kb_limit": 30,
+    "kb_limit": 5,
     "width": 230,
     "height": 230,
     "windup_duration": 200,
