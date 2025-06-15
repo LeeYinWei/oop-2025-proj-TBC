@@ -1,13 +1,25 @@
+# game/entities/level_data.py
 import os
 import sys
 from game.entities.level import Level
 from game.config_loader import load_config
+import re
 
 levels = []
 level_folder = "level_folder"
 
+def extract_level_number(subfolder):
+    """Extract numeric part from subfolder name (e.g., 'level_2' -> 2)."""
+    match = re.match(r'level_(\d+)', subfolder)
+    return int(match.group(1)) if match else float('inf')
+
 if os.path.exists(level_folder):
-    for level_subfolder in os.listdir(level_folder):
+    # Sort subfolders by level number
+    subfolders = sorted(
+        [f for f in os.listdir(level_folder) if os.path.isdir(os.path.join(level_folder, f))],
+        key=extract_level_number
+    )
+    for level_subfolder in subfolders:
         if os.path.isdir(os.path.join(level_folder, level_subfolder)):
             try:
                 config = load_config(level_folder, level_subfolder)
