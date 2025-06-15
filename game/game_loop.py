@@ -209,16 +209,6 @@ async def main_game_loop(screen, clock):
                     except Exception as e:
                         print(f"Error saving completed levels: {e}")
                     print("All enemies defeated, we win!")
-                elif current_level.survival_time > 0 and (current_time - level_start_time) >= current_level.survival_time * 1000:
-                    status = "victory"
-                    game_state = "end"
-                    completed_levels.add(selected_level)
-                    try:
-                        with open(save_file, "w") as f:
-                            json.dump(list(completed_levels), f)
-                    except Exception as e:
-                        print(f"Error saving completed levels: {e}")
-                    print("Survival time reached, we win!")
         elif game_state == "paused":
             draw_pause_menu(screen, font)
             for event in pygame.event.get():
