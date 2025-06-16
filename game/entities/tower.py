@@ -4,6 +4,7 @@ import sys, os
 import random
 
 from game.entities.smokeeffect import SmokeEffect
+from game.entities.csmokeeffect import CSmokeEffect
 
 class Tower:
     def __init__(self, x, y, hp, color=(100, 100, 255), tower_path=None, width=120, height=400, is_enemy=False):
@@ -21,10 +22,13 @@ class Tower:
         self.is_enemy = is_enemy
         self.image = None
         self.smoke_effects = []  # 儲存煙霧特效實例
+        self.csmoke_effects = []
         self.shake_duration = 200  # 抖動持續時間（毫秒）
         self.shake_magnitude = 5   # 抖動幅度（像素）
         self.shake_start_time = 0
         self.is_shaking = False
+        self.collapsing_start_time = 0
+        self.collapsing_magnitude = 8 # 倒塌時的抖動幅度
         if is_enemy and tower_path:
             try:
                 self.image = pygame.image.load(tower_path)
@@ -51,8 +55,9 @@ class Tower:
                 else:
                     self.is_shaking = False
             # 繪製塔樓圖片，並加上抖動偏移
-
+            
             screen.blit(self.image, (self.x+offset_x, self.y))
+    
         else:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
@@ -90,5 +95,25 @@ class Tower:
 
     def update_smoke_effects(self):
         self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
+
         
+    def draw_collapse(self, screen):
+        if self.image:
+            elapsed = pygame.time.get_ticks() - self.collapsing_start_time
+
+                    # 根據時間算出左右晃動偏移量（正弦波）
+            offset_x = int(math.sin(elapsed * 0.05) * self.collapsing_magnitude)
+            # 繪製塔樓圖片，並加上抖動偏移
+            
+            screen.blit(self.image, (self.x+offset_x, self.y))
+    
+        else:
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        self.draw_hp_bar(screen)
+        # 繪製煙霧特效
+        for csmoke in self.csmoke_effects:
+            csmoke.draw(screen)
+            #print("draw csmoke")
+        
+            
     

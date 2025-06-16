@@ -25,14 +25,14 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
             shockwave = ShockwaveEffect(shockwave_x, shockwave_y, duration=1000, scale=1.0)
             shockwave_effects.append(shockwave)
             enemy.has_spawn_shockwave = True  # 標記已觸發，避免重複
-            print(f"Boss {enemy} spawned with shockwave at ({shockwave_x}, {shockwave_y})")
+            #print(f"Boss {enemy} spawned with shockwave at ({shockwave_x}, {shockwave_y})")
 
     for cat in cats:
         cat_attack_zone = cat.get_attack_zone()
         if cat.anim_state in ["windup", "attacking", "recovery"]:
             if not cat.done_attack:
                 cat.done_attack = True
-                print(f"Cat attacking, anim_state: {cat.anim_state}, zone: {cat_attack_zone}")
+                #print(f"Cat attacking, anim_state: {cat.anim_state}, zone: {cat_attack_zone}")
                 if cat.is_aoe:
                     targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
@@ -126,7 +126,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         if enemy.anim_state in ["windup", "attacking", "recovery"]:
             if not enemy.done_attack:
                 enemy.done_attack = True
-                print(f"Enemy attacking, anim_state: {enemy.anim_state}, zone: {enemy_attack_zone}")
+                #print(f"Enemy attacking, anim_state: {enemy.anim_state}, zone: {enemy_attack_zone}")
                 if enemy.is_aoe:
                     targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
                     if enemy_attack_zone.colliderect(our_tower.get_rect()):
@@ -236,7 +236,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
             enemy_y_manager.release_y(enemy.slot_index)
             # 將敵人的獎勵加到 current_budget 中
             current_budget = current_budget+enemy.reward
-            print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
+            #print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
     enemies[:] = new_enemies
 
     # Centralized soul creation for cat deaths

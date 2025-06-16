@@ -2,7 +2,7 @@ import json
 import os
 import asyncio
 import pygame
-from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager
+from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect
 from .battle_logic import update_battle
 from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
 
@@ -140,7 +140,19 @@ async def main_game_loop(screen, clock):
                                 current_level = levels[selected_level]
                                 current_level.reset_towers()
                                 our_tower = current_level.our_tower
+                                cs1 = CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2+70, our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2+80, 1000)
+                                cs2 = CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+40, our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+60, 1000)      
+                                cs3 = CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2+30, our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2+50, 1000)
+                                our_tower.csmoke_effects.append(cs1)
+                                our_tower.csmoke_effects.append(cs2)
+                                our_tower.csmoke_effects.append(cs3)
                                 enemy_tower = current_level.enemy_tower
+                                cs1 =  CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2, enemy_tower.x + enemy_tower.width // 2, enemy_tower.y - enemy_tower.height // 3, 1000)
+                                cs2 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 3, enemy_tower.x + enemy_tower.width // 3, enemy_tower.y - enemy_tower.height // 3, 1000)
+                                cs3 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2, enemy_tower.x + enemy_tower.width // 5, enemy_tower.y - enemy_tower.height // 1, 1000)
+                                enemy_tower.csmoke_effects.append(cs1)
+                                enemy_tower.csmoke_effects.append(cs2)
+                                enemy_tower.csmoke_effects.append(cs3)
                                 for et in current_level.enemy_types:
                                     key = (et["type"], et.get("variant", "default"))
                                     current_level.spawned_counts[key] = 0
@@ -321,7 +333,7 @@ async def main_game_loop(screen, clock):
 
             if status == "victory" and pygame.time.get_ticks() - victory_display_time < victory_duration:
                 # 顯示 Victory 畫面
-                draw_end_screen(screen, current_level, status, end_font, font)
+                draw_end_screen(screen, current_level, status, end_font, font,our_tower,enemy_tower)
                 pygame.display.flip()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -331,7 +343,7 @@ async def main_game_loop(screen, clock):
                         # 無需處理點擊，因為僅接受 Enter 鍵
             else:
                 # 顯示結束畫面
-                draw_end_screen(screen, current_level, status, end_font, font)
+                draw_end_screen(screen, current_level, status, end_font, font,our_tower, enemy_tower)
                 pygame.display.flip()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:

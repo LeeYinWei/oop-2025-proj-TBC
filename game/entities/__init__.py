@@ -8,6 +8,7 @@ from .ymanager import YManager
 
 # 匯入輔助 class
 from .smokeeffect import SmokeEffect
+from .csmokeeffect import CSmokeEffect
 from .shockwaveeffect import ShockwaveEffect
 from .soul import Soul
 # 匯入常數

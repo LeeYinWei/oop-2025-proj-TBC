@@ -3,6 +3,8 @@ import pygame
 import os
 
 from .entities import cat_types, cat_costs, cat_cooldowns
+from game.entities.csmokeeffect import CSmokeEffect
+from game.entities.tower import Tower
 
 # 新增一個變數來儲存背景圖片
 _intro_background_image = None
@@ -366,18 +368,21 @@ def draw_ending_animation(screen, font, y_offset, fade_alpha):
 
     return skip_rect
 
-def draw_end_screen(screen, current_level, status, end_font, font):
+def draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower):
     # Draw background
     screen.blit(current_level.background, (0, 0))
     
     # Draw victory or defeat text
     if status == "victory":
+        enemy_tower.draw_collapse(screen)
         text = end_font.render("Victory!", True, (0, 255, 100))
         screen.blit(text, (350, 250))
         screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (350, 350))
     elif status == "lose":
+        our_tower.draw_collapse(screen)
         text = end_font.render("Defeat!", True, (255, 100, 100))
         screen.blit(text, (350, 250))
         screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (350, 350))
     
+
     return None  # 無需返回矩形，因為不處理互動
