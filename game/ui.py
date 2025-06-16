@@ -368,21 +368,34 @@ def draw_ending_animation(screen, font, y_offset, fade_alpha):
 
     return skip_rect
 
-def draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower):
-    # Draw background
+def draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower, start_time):
+    # 背景
     screen.blit(current_level.background, (0, 0))
-    
-    # Draw victory or defeat text
+
+    # 時間差，用於動畫進度（最大1秒內完成）
+    elapsed = pygame.time.get_ticks() - start_time
+    scale_progress = min(1.0, elapsed / 1500.0)  # 0~1 之間
+
+    # 動畫縮放參數
+    base_font_size = 40
+    max_font_size = 120
+    animated_font_size = int(base_font_size + (max_font_size - base_font_size) * scale_progress)
+
+    # 建立縮放字體物件
+    animated_font = pygame.font.SysFont("Arial", animated_font_size)
+
     if status == "victory":
         enemy_tower.draw_collapse(screen)
-        text = end_font.render("Victory!", True, (0, 255, 100))
-        screen.blit(text, (350, 250))
-        screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (350, 350))
+        text_surface = animated_font.render("Victory!", True, (0, 255, 100))
+        text_rect = text_surface.get_rect(center=(640, 300))  # 螢幕中央
+        screen.blit(text_surface, text_rect)
+        if scale_progress == 1.0:
+            screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (460, 400))
+
     elif status == "lose":
         our_tower.draw_collapse(screen)
-        text = end_font.render("Defeat!", True, (255, 100, 100))
-        screen.blit(text, (350, 250))
-        screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (350, 350))
-    
-
-    return None  # 無需返回矩形，因為不處理互動
+        text_surface = animated_font.render("Defeat!", True, (255, 100, 100))
+        text_rect = text_surface.get_rect(center=(640, 300))
+        screen.blit(text_surface, text_rect)
+        if scale_progress == 1.0:
+            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (460, 400))

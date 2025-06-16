@@ -333,7 +333,7 @@ async def main_game_loop(screen, clock):
 
             if status == "victory" and pygame.time.get_ticks() - victory_display_time < victory_duration:
                 # 顯示 Victory 畫面
-                draw_end_screen(screen, current_level, status, end_font, font,our_tower,enemy_tower)
+                draw_end_screen(screen, current_level, status, end_font, font,our_tower,enemy_tower, victory_display_time)
                 pygame.display.flip()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -343,7 +343,7 @@ async def main_game_loop(screen, clock):
                         # 無需處理點擊，因為僅接受 Enter 鍵
             else:
                 # 顯示結束畫面
-                draw_end_screen(screen, current_level, status, end_font, font,our_tower, enemy_tower)
+                draw_end_screen(screen, current_level, status, end_font, font,our_tower, enemy_tower, victory_display_time)
                 pygame.display.flip()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
