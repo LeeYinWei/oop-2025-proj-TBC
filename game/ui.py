@@ -246,8 +246,13 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
 
     return pause_rect
 
-def draw_pause_menu(screen, font):
-    background_color = (100, 100, 100, 200)
+def draw_pause_menu(screen, font, current_level):
+    screen.blit(current_level.background, (0, 0))
+    # 新增一層透明的遮罩
+    overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)  # 建立與螢幕同大小的透明 surface
+    overlay.fill((50, 50, 50, 100))  # RGBA：深藍色、透明度約 100/255
+    screen.blit(overlay, (0, 0))  # 疊加上去
+    background_color = (100, 100, 100, 240)
     pause_surface = pygame.Surface((400, 200), pygame.SRCALPHA)
     pause_surface.fill(background_color)
     screen.blit(pause_surface, (440, 200))

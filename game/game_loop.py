@@ -284,7 +284,7 @@ async def main_game_loop(screen, clock):
             #     print("All enemies defeated, we win!")
 
         elif game_state == "paused":
-            end_rect, continue_rect = draw_pause_menu(screen, font)
+            end_rect, continue_rect = draw_pause_menu(screen, font, current_level)
             pygame.display.flip()
 
             for event in pygame.event.get():
