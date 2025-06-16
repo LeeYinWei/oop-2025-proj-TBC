@@ -4,7 +4,7 @@ import asyncio
 import pygame
 from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager
 from .battle_logic import update_battle
-from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen
+from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
 
 async def main_game_loop(screen, clock):
     FPS = 60
@@ -49,7 +49,7 @@ async def main_game_loop(screen, clock):
 
     # Intro animation variables
     intro_start_time = pygame.time.get_ticks()
-    intro_duration = 35000  # 10 seconds total duration
+    intro_duration = 35000  # 35 seconds total duration
     fade_in_duration = 5000  # 5 seconds for fade-in
     y_offset = screen.get_height()
     current_fade_alpha = 0
@@ -219,7 +219,7 @@ async def main_game_loop(screen, clock):
                         enemy_y, enemy_slot = enemy_y_manager.get_available_y()
                         enemy = enemy_types[et["type"]](
                             enemy_tower_center, enemy_y,
-                            is_boss=et.get("is_boss", False),  # 移除 enemy_type，依賴 lambda 或類映射
+                            is_boss=et.get("is_boss", False),
                             cfg=config
                         )
                         enemy.slot_index = enemy_slot
@@ -306,34 +306,124 @@ async def main_game_loop(screen, clock):
                         game_state = "playing"
                         print("Resuming battle")
 
+
+        # game/game_loop.py (部分修改)
+        # game/game_loop.py (部分修改)
         elif game_state == "end":
             current_level = levels[selected_level]
             is_last_level = selected_level == len(levels) - 1
             first_completion = is_last_level and (selected_level not in completed_levels)
+            victory_display_time = getattr(pygame.time, "victory_display_time", 0)
             
+            if victory_display_time == 0 and status == "victory":
+                pygame.time.victory_display_time = pygame.time.get_ticks()
+                victory_duration = 3000  # 3 秒顯示 Victory 畫面
 
+            if status == "victory" and pygame.time.get_ticks() - victory_display_time < victory_duration:
+                # 顯示 Victory 畫面
+                draw_end_screen(screen, current_level, status, end_font, font)
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        pos = event.pos
+                        # 無需處理點擊，因為僅接受 Enter 鍵
+            else:
+                # 顯示結束畫面
+                draw_end_screen(screen, current_level, status, end_font, font)
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return
+                    elif event.type == pygame.KEYDOWN:
+                        if first_completion and event.key == pygame.K_RETURN:  # 按 Enter 跳轉到結尾動畫
+                            game_state = "ending"
+                            pygame.time.ending_start_time = pygame.time.get_ticks()
+                        else:
+                            game_state = "level_selection"
+                            our_tower = None
+                            enemy_tower = None
+                            cats.clear()
+                            enemies.clear()
+                            souls.clear()
+                            shockwave_effects.clear()
+                            current_budget = 1000
+                            if (selected_level not in completed_levels) and status == "victory":
+                                completed_levels.add(selected_level)
+                                try:
+                                    with open(save_file, "w") as f:
+                                        json.dump(list(completed_levels), f)
+                                except Exception as e:
+                                    print(f"Error saving completed levels: {e}")
 
-            draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete=first_completion)
+        elif game_state == "ending":
+            ending_start_time = getattr(pygame.time, "ending_start_time", 0)
+            if ending_start_time == 0:
+                pygame.time.ending_start_time = pygame.time.get_ticks()
+            ending_duration = 35000  # 35秒總時長
+            fade_in_duration = 5000  # 5秒淡入
+            y_offset = screen.get_height()
+            current_fade_alpha = 0
+
+            current_time = pygame.time.get_ticks()
+            elapsed_time = current_time - ending_start_time
+
+            if elapsed_time < fade_in_duration:
+                fade_progress = elapsed_time / fade_in_duration
+                current_fade_alpha = int(255 * fade_progress)
+            else:
+                current_fade_alpha = 255
+
+            text_scroll_start_time = ending_start_time + fade_in_duration
+            if elapsed_time >= fade_in_duration:
+                text_progress_time = elapsed_time - fade_in_duration
+                text_scroll_duration = ending_duration - fade_in_duration
+                text_scroll_progress = min(1.0, text_progress_time / text_scroll_duration) if text_scroll_duration > 0 else 1.0
+                y_offset = screen.get_height() * (1 - text_scroll_progress * text_scroll_progress)
+
+            skip_rect = draw_ending_animation(screen, font, y_offset, current_fade_alpha)
             pygame.display.flip()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
-                elif event.type == pygame.KEYDOWN:
-                    game_state = "level_selection"
-                    our_tower = None
-                    enemy_tower = None
-                    cats.clear()
-                    enemies.clear()
-                    souls.clear()
-                    shockwave_effects.clear()
-                    current_budget = 1000
-                    if first_completion:
-                        completed_levels.add(selected_level)
-                        try:
-                            with open(save_file, "w") as f:
-                                json.dump(list(completed_levels), f)
-                        except Exception as e:
-                            print(f"Error saving completed levels: {e}")
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    if skip_rect and skip_rect.collidepoint(pos):
+                        game_state = "level_selection"
+                        our_tower = None
+                        enemy_tower = None
+                        cats.clear()
+                        enemies.clear()
+                        souls.clear()
+                        shockwave_effects.clear()
+                        current_budget = 1000
+                        if selected_level not in completed_levels:  # 確保唯一性
+                            completed_levels.add(selected_level)
+                            try:
+                                with open(save_file, "w") as f:
+                                    json.dump(list(completed_levels), f)
+                            except Exception as e:
+                                print(f"Error saving completed levels: {e}")
+                        pygame.time.ending_start_time = 0
+
+            if elapsed_time >= ending_duration:
+                game_state = "level_selection"
+                our_tower = None
+                enemy_tower = None
+                cats.clear()
+                enemies.clear()
+                souls.clear()
+                shockwave_effects.clear()
+                current_budget = 1000
+                if selected_level not in completed_levels:  # 確保唯一性
+                    completed_levels.add(selected_level)
+                    try:
+                        with open(save_file, "w") as f:
+                            json.dump(list(completed_levels), f)
+                    except Exception as e:
+                        print(f"Error saving completed levels: {e}")
+                pygame.time.ending_start_time = 0
 
         await asyncio.sleep(1 / FPS)
