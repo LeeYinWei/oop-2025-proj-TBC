@@ -52,7 +52,7 @@ class ShockwaveEffect:
             return
 
         # Clear the temporary surface for the current frame's drawing
-        self.temp_surface.fill((0, 0, 0, 0)) # Fill with fully transparent
+        # self.temp_surface.fill((0, 0, 0, 0)) # Fill with fully transparent
 
         # Calculate the actual alpha for drawing the shockwave color based on self.alpha
         
@@ -64,7 +64,7 @@ class ShockwaveEffect:
         # Draw the inner filled circle to create the "thickness" effect (this still uses full transparency)
         inner_radius = max(0, radius - self.thickness)
         if inner_radius > 0:
-            hole_color = (0, 0, 0, 0) # Fully transparent black for cutting out the hole
+            hole_color = (255, 255, 255, 0) # Fully transparent black for cutting out the hole
             pygame.draw.circle(self.temp_surface, hole_color, (self.max_radius, self.max_radius), inner_radius)
 
         # --- CRITICAL CHANGE: Remove self.temp_surface.set_alpha() ---
