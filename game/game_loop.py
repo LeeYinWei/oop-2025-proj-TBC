@@ -270,18 +270,18 @@ async def main_game_loop(screen, clock):
                 except Exception as e:
                     print(f"Error saving completed levels: {e}")
                 print("Enemy tower destroyed, we win!")
-            elif current_level.all_limited_spawned and not any(
-                not et.get("is_limited", False) for et in current_level.enemy_types
-            ) and not enemies:
-                status = "victory"
-                game_state = "end"
-                completed_levels.add(selected_level - 1)  # 調整為 0-based 索引
-                try:
-                    with open(save_file, "w") as f:
-                        json.dump(list(completed_levels), f)
-                except Exception as e:
-                    print(f"Error saving completed levels: {e}")
-                print("All enemies defeated, we win!")
+            # elif current_level.all_limited_spawned and not any(
+            #     not et.get("is_limited", False) for et in current_level.enemy_types
+            # ) and not enemies:
+            #     status = "victory"
+            #     game_state = "end"
+            #     completed_levels.add(selected_level - 1)  # 調整為 0-based 索引
+            #     try:
+            #         with open(save_file, "w") as f:
+            #             json.dump(list(completed_levels), f)
+            #     except Exception as e:
+            #         print(f"Error saving completed levels: {e}")
+            #     print("All enemies defeated, we win!")
 
         elif game_state == "paused":
             end_rect, continue_rect = draw_pause_menu(screen, font)
@@ -310,8 +310,9 @@ async def main_game_loop(screen, clock):
             current_level = levels[selected_level]
             is_last_level = selected_level == len(levels) - 1
             first_completion = is_last_level and (selected_level not in completed_levels)
-            # print(f"End state reached for level {selected_level}, is_last_level: {is_last_level}, first_completion: {first_completion}")
             
+
+
             draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete=first_completion)
             pygame.display.flip()
 

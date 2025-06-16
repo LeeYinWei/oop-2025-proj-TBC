@@ -185,24 +185,43 @@ def draw_end_screen(screen, current_level, status, end_font, font, show_mission_
     # Draw "Mission Complete" box for first completion of last level
     if show_mission_complete:
         mission_box_width = 400
-        mission_box_height = 200
+        mission_box_height = 250  # 增加高度以容納更多內容
         mission_box_x = (screen.get_width() - mission_box_width) // 2
         mission_box_y = (screen.get_height() - mission_box_height) // 2
         mission_box_rect = pygame.Rect(mission_box_x, mission_box_y, mission_box_width, mission_box_height)
         
-        # Draw box with border
-        pygame.draw.rect(screen, (0, 0, 0), mission_box_rect)  # Black background
-        pygame.draw.rect(screen, (255, 215, 0), mission_box_rect, 5)  # Gold border
+        # Draw box with border and animation effect
+        current_time = pygame.time.get_ticks()
+        pulse_alpha = (pygame.time.get_ticks() % 1000) / 1000 * 50 + 205  # 脈衝效果，透明度在 205-255 之間變化
+        pygame.draw.rect(screen, (0, 0, 0), mission_box_rect)  # 黑色背景
+        pygame.draw.rect(screen, (255, 215, 0, int(pulse_alpha)), mission_box_rect, 5)  # 金色邊框帶動態透明度
         
-        # Draw "Mission Complete" text
+        # Draw "Mission Complete" text with animation
         mission_text = font.render("Mission Complete!", True, (255, 255, 255))
         mission_text_rect = mission_text.get_rect(center=mission_box_rect.center)
+        mission_text_rect.y -= 30  # 稍微上移文字
         screen.blit(mission_text, mission_text_rect)
         
         # Add congratulatory message
         congrats_text = font.render("Congratulations on completing the game!", True, (255, 255, 255))
         congrats_text_rect = congrats_text.get_rect(center=(mission_box_rect.centerx, mission_box_rect.centery + 30))
         screen.blit(congrats_text, congrats_text_rect)
+        
+        # Add celebratory icon (e.g., a star or trophy)
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            icon_path = os.path.join(base_dir, "background", "trophy_icon.png")  # 假設有 trophy_icon.png
+            icon_image = pygame.image.load(icon_path).convert_alpha()
+            icon_image = pygame.transform.scale(icon_image, (50, 50))
+            icon_rect = icon_image.get_rect(center=(mission_box_rect.centerx, mission_box_rect.centery - 30))
+            screen.blit(icon_image, icon_rect)
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading trophy icon: {e}, skipping icon display")
+        
+        # Add additional reward text (e.g., bonus points or message)
+        reward_text = font.render("You earned a special reward!", True, (255, 255, 255))
+        reward_text_rect = reward_text.get_rect(center=(mission_box_rect.centerx, mission_box_rect.centery + 70))
+        screen.blit(reward_text, reward_text_rect)
 
 
 # 新增一個變數來儲存背景圖片
