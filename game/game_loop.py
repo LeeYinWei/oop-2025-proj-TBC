@@ -49,7 +49,7 @@ async def main_game_loop(screen, clock):
 
     # Intro animation variables
     intro_start_time = pygame.time.get_ticks()
-    intro_duration = 10000  # 10 seconds total duration
+    intro_duration = 35000  # 10 seconds total duration
     fade_in_duration = 5000  # 5 seconds for fade-in
     y_offset = screen.get_height()
     current_fade_alpha = 0
