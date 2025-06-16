@@ -21,8 +21,8 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
     for enemy in enemies:
         if enemy.is_boss and not getattr(enemy, 'has_spawn_shockwave', False):
             shockwave_x = enemy.x + enemy.width // 2
-            shockwave_y = enemy.y + enemy.height // 2
-            shockwave = ShockwaveEffect(shockwave_x, shockwave_y, now)
+            shockwave_y = enemy.y + enemy.height // 2-150
+            shockwave = ShockwaveEffect(shockwave_x, shockwave_y, duration=1000, scale=1.0)
             shockwave_effects.append(shockwave)
             enemy.has_spawn_shockwave = True  # 標記已觸發，避免重複
             print(f"Boss {enemy} spawned with shockwave at ({shockwave_x}, {shockwave_y})")
