@@ -1,0 +1,157 @@
+@startuml
+class Cat {
+  -x: float
+  -y: float
+  -type: str
+  -speed: float
+  -width: int
+  -height: int
+  -is_attacking: bool
+  -anim_state: str
+  -anim_start_time: int
+  -has_retreated: bool
+  -retreat_distance: float
+  -retreat_direction: int
+  -slot_index: int
+  +start_retreat(distance: float)
+  +update(now: int)
+  +draw(screen)
+  +get_rect()
+  +update_status_effects(current_time: int)
+  +get_attack_zone()
+  +move()
+}
+
+class Enemy {
+  -x: float
+  -y: float
+  -is_boss: bool
+  -has_spawn_shockwave: bool
+  -hp: float
+  -speed: float
+  -atk: float
+  -width: int
+  -height: int
+  -slot_index: int
+  +update_status_effects(current_time: int)
+  +draw(screen)
+  +get_rect()
+  +get_attack_zone()
+  +move()
+  +take_damage(damage: float)
+  +knock_back()
+}
+
+class Tower {
+  -y: int
+  -width: int
+  -height: int
+  -hp: float
+  -max_hp: float
+  -contact_points: list
+  +draw(screen)
+  +get_rect()
+  +take_damage(damage: float)
+}
+
+class ShockwaveEffect {
+  -x: float
+  -y: float
+  -max_radius: float
+  -duration: int
+  -start_time: int
+  +update(now: int) : bool
+  +draw(screen)
+  +get_affected_area() : pygame.Rect
+}
+
+class Soul {
+  -x: float
+  -y: float
+  +update() : bool
+  +draw(screen)
+}
+
+class YManager {
+  -base_y: int
+  -min_y: int
+  -max_slots: int
+  -occupied_slots: list
+  +get_available_y() : tuple[int, int]
+  +release_y(slot_index: int)
+}
+
+class Level {
+  -name: str
+  -enemy_types: list[dict]
+  -spawn_interval: int
+  -survival_time: int
+  -background_path: str
+  -our_tower: Tower
+  -enemy_tower: Tower
+  -tower_distance: int
+  -spawned_counts: dict
+  -last_spawn_times: dict
+  -all_limited_spawned: bool
+  -enemy_configs: dict
+  +reset_towers()
+  +check_all_limited_spawned() : bool
+}
+
+class GameLoop {
+  -screen: pygame.Surface
+  -clock: pygame.time.Clock
+  -game_state: str
+  -selected_level: int
+  -selected_cats: list[str]
+  -completed_levels: set
+  -cats: list[Cat]
+  -enemies: list[Enemy]
+  -souls: list[Soul]
+  -shockwave_effects: list[ShockwaveEffect]
+  -our_tower: Tower
+  -enemy_tower: Tower
+  -last_spawn_time: dict
+  -last_budget_increase_time: int
+  -total_budget_limitation: int
+  -current_budget: int
+  -budget_rate: int
+  -status: str
+  -level_start_time: int
+  -cat_y_manager: YManager
+  -enemy_y_manager: YManager
+  -cat_key_map: dict
+  -button_rects: dict
+  -intro_start_time: int
+  -intro_duration: int
+  -fade_in_duration: int
+  -y_offset: int
+  -current_fade_alpha: int
+  +main_game_loop() : None
+}
+
+class UI {
+  +load_level_selection_background_image(screen_width: int, screen_height: int) : pygame.Surface
+  +draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels) : tuple
+  +draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map) : pygame.Rect
+  +draw_pause_menu(screen, font) : tuple
+  +draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete: bool)
+  +load_intro_background_image(screen_width: int, screen_height: int) : pygame.Surface
+  +draw_intro_screen(screen, font, y_offset, fade_alpha) : pygame.Rect
+  +wrap_text(text: str, font, max_width: int) : list[str]
+}
+
+GameLoop o--> Cat
+GameLoop o--> Enemy
+GameLoop o--> Tower
+GameLoop o--> ShockwaveEffect
+GameLoop o--> Soul
+GameLoop o--> YManager
+GameLoop o--> Level
+GameLoop ..> update_battle : uses
+UI ..> GameLoop : renders
+Level o--> Tower : composition
+YManager o--> Cat : manages
+YManager o--> Enemy : manages
+
+@enduml
