@@ -21,6 +21,10 @@ class Tower:
         self.is_enemy = is_enemy
         self.image = None
         self.smoke_effects = []  # 儲存煙霧特效實例
+        self.shake_duration = 200  # 抖動持續時間（毫秒）
+        self.shake_magnitude = 5   # 抖動幅度（像素）
+        self.shake_start_time = 0
+        self.is_shaking = False
         if is_enemy and tower_path:
             try:
                 self.image = pygame.image.load(tower_path)
@@ -38,7 +42,17 @@ class Tower:
 
     def draw(self, screen):
         if self.image:
-            screen.blit(self.image, (self.x, self.y))
+            offset_x = 0
+            if self.is_shaking:
+                elapsed = pygame.time.get_ticks() - self.shake_start_time
+                if elapsed < self.shake_duration:
+                    # 根據時間算出左右晃動偏移量（正弦波）
+                    offset_x = int(math.sin(elapsed * 0.05) * self.shake_magnitude)
+                else:
+                    self.is_shaking = False
+            # 繪製塔樓圖片，並加上抖動偏移
+
+            screen.blit(self.image, (self.x+offset_x, self.y))
         else:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         self.draw_hp_bar(screen)
@@ -60,6 +74,12 @@ class Tower:
     def take_damage(self, damage):
         self.hp -= damage
         if self.hp > 0:
+            # 抖動效果
+            if not self.is_shaking:
+                self.shake_start_time = pygame.time.get_ticks()
+                self.is_shaking = True
+    
+
             # 被攻擊時生成煙霧特效，3-5 個粒子，位置在角色中心
             center_x = self.x + self.width // 2
             center_y = self.y + self.height // 2

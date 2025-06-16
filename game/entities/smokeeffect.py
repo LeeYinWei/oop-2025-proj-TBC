@@ -30,7 +30,7 @@ class SmokeEffect:
             return False
         self.alpha = max(0, 1.0 - (elapsed / self.duration))  # 逐漸消失
         #self.size += 0.5  # 煙霧逐漸擴散
-        self.y -= 0.3  # 向上飄動
+        self.y -= 0.8  # 向上飄動
         return True
 
     def draw(self, screen):
