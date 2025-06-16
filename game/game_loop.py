@@ -247,6 +247,7 @@ async def main_game_loop(screen, clock):
                 soul.draw(screen)
             for shockwave in shockwave_effects:
                 shockwave.draw(screen)
+                print(f"Drawing shockwave at ({shockwave.x}, {shockwave.y}) ")
             for cat in cats:
                 cat.draw(screen)
             for enemy in enemies:
