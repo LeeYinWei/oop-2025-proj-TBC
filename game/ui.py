@@ -317,7 +317,7 @@ def draw_ending_animation(screen, font, y_offset, fade_alpha):
         print("Warning: Ending background image not loaded or found, using black background.")
 
     # Load ending story from file
-    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "background", "ending_story.txt")
+    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "background", "mission_complete_story.txt")
     raw_story_content = ""
     if os.path.exists(story_file):
         try:

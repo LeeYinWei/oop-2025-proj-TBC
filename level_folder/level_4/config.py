@@ -38,7 +38,7 @@ level_config = {
             "initial_delay": 6000,
             "spawn_interval_1": 4000,
             "hp_multiplier": 1,
-            "damage_multiplier": 10,
+            "damage_multiplier": 1,
         }
     ],
     "spawn_interval": 2000,
