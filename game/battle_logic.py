@@ -54,7 +54,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             
                         elif isinstance(tar, Tower):
                             tower = tar
-                            tower.hp -= cat.atk
+                            tower.take_damage(cat.atk)
                             contact_rect = cat_attack_zone.clip(tower.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
@@ -62,7 +62,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 else:
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                         tower = enemy_tower
-                        tower.hp -= cat.atk
+                        tower.take_damage(cat.atk)
                         contact_rect = cat_attack_zone.clip(tower.get_rect())
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)
@@ -147,7 +147,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             enemy.contact_points.append(contact_point)
                         elif isinstance(tar, Tower):
                             tower = tar
-                            tower.hp -= enemy.atk
+                            tower.take_damage(enemy.atk)
                             contact_rect = enemy_attack_zone.clip(tower.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
@@ -155,7 +155,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 else:
                     if enemy_attack_zone.colliderect(our_tower.get_rect()):
                         tower = our_tower
-                        tower.hp -= enemy.atk
+                        tower.take_damage(enemy.atk)
                         contact_rect = enemy_attack_zone.clip(tower.get_rect())
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)

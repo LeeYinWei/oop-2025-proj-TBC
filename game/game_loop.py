@@ -204,7 +204,7 @@ async def main_game_loop(screen, clock):
                 if (not et.get("is_limited", False) or current_level.spawned_counts.get(key, 0) < et.get("spawn_count", 0)) and tower_hp_percent <= et.get("tower_hp_percent", 100):
                     interval = et.get("spawn_interval_1", current_level.spawn_interval)
                     initial_delay = et.get("initial_delay", 0)
-                    if current_time - current_level.last_spawn_times.get(key, 0) >= interval and current_time >= initial_delay:
+                    if current_time - current_level.last_spawn_times.get(key, 0) >= interval and current_time - level_start_time >= initial_delay:
                         enemy_tower_center = current_level.enemy_tower.x + current_level.enemy_tower.width / 2
                         config = {
                             "hp": 100, "speed": 1, "atk": 10, "attack_range": 50,
