@@ -129,7 +129,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 print(f"Enemy attacking, anim_state: {enemy.anim_state}, zone: {enemy_attack_zone}")
                 if enemy.is_aoe:
                     targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
-                    if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+                    if enemy_attack_zone.colliderect(our_tower.get_rect()):
                         targets.append(our_tower)
                     for tar in targets:
                         if isinstance(tar, Cat):
@@ -153,7 +153,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             tower.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
                 else:
-                    if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+                    if enemy_attack_zone.colliderect(our_tower.get_rect()):
                         tower = our_tower
                         tower.hp -= enemy.atk
                         contact_rect = enemy_attack_zone.clip(tower.get_rect())
@@ -177,7 +177,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 break
         elif enemy.is_aoe:
             targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
-            if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+            if enemy_attack_zone.colliderect(our_tower.get_rect()):
                 targets.append(our_tower)
             if targets and now - enemy.last_attack_time >= enemy.attack_interval:
                 enemy.anim_state = "windup"
@@ -190,7 +190,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 enemy.move()
         else:
             target_in_range = False
-            if not enemy.is_boss and enemy_attack_zone.colliderect(our_tower.get_rect()):
+            if enemy_attack_zone.colliderect(our_tower.get_rect()):
                 target_in_range = True
                 if now - enemy.last_attack_time >= enemy.attack_interval:
                     enemy.anim_state = "windup"
