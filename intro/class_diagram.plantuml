@@ -139,6 +139,7 @@ class UI {
   +load_intro_background_image(screen_width: int, screen_height: int) : pygame.Surface
   +draw_intro_screen(screen, font, y_offset, fade_alpha) : pygame.Rect
   +wrap_text(text: str, font, max_width: int) : list[str]
+  +draw_ending_animation(screen, font, y_offset, fade_alpha)
 }
 
 GameLoop o--> Cat
