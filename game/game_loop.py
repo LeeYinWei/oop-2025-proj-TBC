@@ -140,16 +140,16 @@ async def main_game_loop(screen, clock):
                                 current_level = levels[selected_level]
                                 current_level.reset_towers()
                                 our_tower = current_level.our_tower
-                                cs1 = CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2+70, our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2+80, 1000)
-                                cs2 = CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+40, our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+60, 1000)      
-                                cs3 = CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2+30, our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2+50, 1000)
+                                cs1 = CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2-30, our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2+30, 1000)
+                                cs2 = CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+10, our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2+20, 1000)      
+                                cs3 = CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2+40, our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2, 1000)
                                 our_tower.csmoke_effects.append(cs1)
                                 our_tower.csmoke_effects.append(cs2)
                                 our_tower.csmoke_effects.append(cs3)
                                 enemy_tower = current_level.enemy_tower
-                                cs1 =  CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2, enemy_tower.x + enemy_tower.width // 2, enemy_tower.y - enemy_tower.height // 3, 1000)
-                                cs2 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 3, enemy_tower.x + enemy_tower.width // 3, enemy_tower.y - enemy_tower.height // 3, 1000)
-                                cs3 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2, enemy_tower.x + enemy_tower.width // 5, enemy_tower.y - enemy_tower.height // 1, 1000)
+                                cs1 =  CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2-20, enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3+20, 1000)
+                                cs2 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2+30, enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2, 1000)
+                                cs3 = CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2+50, enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2+60, 1000)
                                 enemy_tower.csmoke_effects.append(cs1)
                                 enemy_tower.csmoke_effects.append(cs2)
                                 enemy_tower.csmoke_effects.append(cs3)

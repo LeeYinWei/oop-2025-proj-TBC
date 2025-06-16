@@ -12,8 +12,8 @@ class CSmokeEffect:
         self.start_time = pygame.time.get_ticks()
         self.duration = duration  # 煙霧持續時間
         self.alpha = 255
-        self.scale1 = random.uniform(0.4, 0.6)  # 隨機煙霧大小
-        self.scale2 = random.uniform(0.4, 0.7)
+        self.scale1 = random.uniform(0.4, 0.5)  # 隨機煙霧大小
+        self.scale2 = random.uniform(0.4, 0.6)
         self.color = (150, 150, 150)  # 灰色煙霧
 
         self.frames1 = []
