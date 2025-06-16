@@ -43,7 +43,7 @@ level_config = {
     ],
     "spawn_interval": 3000,
     "survival_time": 60,
-    "background_path": "background/background1.png",
+    "background_path": "background/background3.png",
     "our_tower": {
         "y": 140,
         "width": 350,
