@@ -8,6 +8,7 @@ from game.constants import BOTTOM_Y
 # 如果需要用 load_config
 from game.config_loader import load_config
 
+from game.entities.electriceffect import ElectricEffect
 from game.entities.smokeeffect import SmokeEffect
 from game.entities.physiceffect import PhysicEffect
 
@@ -84,6 +85,7 @@ class Cat:
         self.has_retreated = False  # 添加後退標記，預設為 False
         self.smoke_effects = []  # 儲存煙霧特效實例
         self.physic_effects = []  # 儲存物理特效實例
+        self.electric_effects = []  # 儲存電擊特效實例
 
         self.done_attack = False
         self.slot_index = None  # 儲存使用的 y_slot 索引
@@ -139,6 +141,14 @@ class Cat:
                     physic_x = center_x + random.randint(-5, 5)
                     physic_y = center_y + random.randint(-5, 5)
                     self.physic_effects.append(PhysicEffect(physic_x, physic_y))
+            elif attack_type == "electric": 
+                # 被攻擊時生成電擊特效，3-5 個粒子，位置在角色中心
+                center_x = self.x + self.width // 2
+                center_y = self.y + self.height // 2
+                for _ in range(random.randint(3, 5)):
+                    electric_x = center_x + random.randint(-5, 5)
+                    electric_y = center_y + random.randint(-5, 5)
+                    self.electric_effects.append(ElectricEffect(electric_x, electric_y))
         thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
             self.knock_back()
@@ -197,6 +207,9 @@ class Cat:
     def update_physic_effects(self):
         self.physic_effects = [ physic for physic in self.physic_effects if physic.update()]
 
+    def update_electric_effects(self):
+        self.electric_effects = [electric for electric in self.electric_effects if electric.update()]
+
     def get_current_frame(self):
         state = "moving" if self.kb_animation else self.anim_state
         frames = self.anim_frames[state]
@@ -223,6 +236,10 @@ class Cat:
         # 繪製物理特效
         for physic in self.physic_effects:
             physic.draw(screen)
+
+        # 繪製電擊特效
+        for electric in self.electric_effects:
+            electric.draw(screen)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
