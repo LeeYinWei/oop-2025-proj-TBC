@@ -28,4 +28,5 @@ cat_config = {
     "ibtn_idle": "cat_folder/speedy/ibtn_idle.png",
     "ibtn_hover": "ccat_folder/speedy/ibtn_hover.png",
     "ibtn_pressed": "cat_folder/speedy/ibtn_pressed.png",
+    "attack_type": "physic",  # 攻擊類型
 }

@@ -28,4 +28,5 @@ enemy_config = {
     "kb_frames": [],  # 無對應圖片，保持空
     "attributes": ["紅"],  # Fixed attribute: Red, based on color (255, 0, 0)
     "reward": 105,  # 假設的獎勵值
+    "attack_type":"gun",  # 攻擊類型
 }

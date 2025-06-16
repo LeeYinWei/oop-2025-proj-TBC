@@ -34,6 +34,7 @@ if os.path.exists(cat_folder):
                     status_effects_config=cfg.get("status_effects", {}),
                     attack_interval=cfg.get("attack_interval", 1000),
                     delta_y=cfg["delta_y"] if "delta_y" in cfg else 0
+                    , attack_type=cfg["attack_type"] if "attack_type" in cfg else "gun"
                 )
                 cat_cooldowns[cat_type] = config["cooldown"]
                 cat_costs[cat_type] = config["cost"]

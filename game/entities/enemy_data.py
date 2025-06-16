@@ -26,6 +26,7 @@ if os.path.exists(enemy_folder):
                     hp_multiplier=cfg.get("hp_multiplier", 1.0),
                     atk_multiplier=cfg.get("atk_multiplier", 1.0),
                     reward= cfg.get("reward", 0),
+                    attack_type=cfg["attack_type"] if "attack_type" in cfg else "gun"
                 )
             except Exception as e:
                 print(f"Error loading enemy config for '{enemy_type}': {e}")

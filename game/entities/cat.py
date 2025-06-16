@@ -9,13 +9,14 @@ from game.constants import BOTTOM_Y
 from game.config_loader import load_config
 
 from game.entities.smokeeffect import SmokeEffect
+from game.entities.physiceffect import PhysicEffect
 
 class Cat:
     def __init__(self, x, y, hp, atk, speed, color, attack_range=50, is_aoe=False,
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, delta_y=0):
+                 target_attributes=None, immunities=None, boosts=None, status_effects_config=None, attack_interval=1000, delta_y=0,attack_type="gun"):
         self.x = x
         self.y = y-height+delta_y  # 將 y 座標設置為底部對齊
         self.y0 = y-height+delta_y
@@ -82,9 +83,11 @@ class Cat:
         self.attack_interval = attack_interval
         self.has_retreated = False  # 添加後退標記，預設為 False
         self.smoke_effects = []  # 儲存煙霧特效實例
+        self.physic_effects = []  # 儲存物理特效實例
 
         self.done_attack = False
         self.slot_index = None  # 儲存使用的 y_slot 索引
+        self.attack_type = attack_type  # 攻擊類型，預設為 "gun"
 
     def move(self):
         if not self.is_attacking and not self.kb_animation and self.anim_state not in ["windup", "attacking", "recovery"]:
@@ -116,16 +119,26 @@ class Cat:
             self.anim_state = "moving"
             self.has_retreated = True
 
-    def take_damage(self, damage):
+    def take_damage(self, damage, attack_type):
+        """處理受到傷害的邏輯，並根據攻擊類型生成特效"""
         self.hp -= damage
         if self.hp > 0:
-            # 被攻擊時生成煙霧特效，3-5 個粒子，位置在角色中心
-            center_x = self.x + self.width // 2
-            center_y = self.y + self.height // 2
-            for _ in range(random.randint(3, 5)):
-                smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
-                smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
-                self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+            if attack_type == "gun":
+                # 被攻擊時生成煙霧特效，3-5 個粒子，位置在角色中心
+                center_x = self.x + self.width // 2
+                center_y = self.y + self.height // 2
+                for _ in range(random.randint(3, 5)):
+                    smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
+                    smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
+                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+            elif attack_type == "physic":
+                # 被攻擊時生成物理特效，3-5 個粒子，位置在角色中心
+                center_x = self.x + self.width // 2
+                center_y = self.y + self.height // 2
+                for _ in range(random.randint(3, 5)):
+                    physic_x = center_x + random.randint(-5, 5)
+                    physic_y = center_y + random.randint(-5, 5)
+                    self.physic_effects.append(PhysicEffect(physic_x, physic_y))
         thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
             self.knock_back()
@@ -181,6 +194,9 @@ class Cat:
     def update_smoke_effects(self):
         self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
 
+    def update_physic_effects(self):
+        self.physic_effects = [ physic for physic in self.physic_effects if physic.update()]
+
     def get_current_frame(self):
         state = "moving" if self.kb_animation else self.anim_state
         frames = self.anim_frames[state]
@@ -203,6 +219,10 @@ class Cat:
         # 繪製煙霧特效
         for smoke in self.smoke_effects:
             smoke.draw(screen)
+
+        # 繪製物理特效
+        for physic in self.physic_effects:
+            physic.draw(screen)
 
     def draw_hp_bar(self, screen):
         bar_width = self.width
