@@ -67,6 +67,7 @@ async def main_game_loop(screen, clock):
     font = pygame.font.SysFont(None, 25)
     end_font = pygame.font.SysFont(None, 96)
     select_font = pygame.font.SysFont(None, 60)
+    budget_font = pygame.font.SysFont(None, 40)
     square_surface = pygame.Surface((1220, 480), pygame.SRCALPHA)
     square_surface.fill((150, 150, 150, 100))  # 50% 透明
 
@@ -283,7 +284,7 @@ async def main_game_loop(screen, clock):
 
         elif game_state == "playing":
             current_level = levels[selected_level]
-            pause_rect = draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map)
+            pause_rect = draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map, budget_font)
 
             any_boss_present = any(enemy.is_boss for enemy in enemies)
             if any_boss_present and not boss_shockwave_played:

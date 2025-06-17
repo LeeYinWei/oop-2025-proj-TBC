@@ -2,7 +2,7 @@ import pygame
 
 from ..entities import cat_types, cat_costs, cat_cooldowns
 
-def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map):
+def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map, budget_font):
     background_color = (200, 255, 200)
     screen.fill(background_color)
     screen.blit(current_level.background, (0, 0))
@@ -10,8 +10,8 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
     # Draw towers, cats, enemies, etc. (assuming this exists in your original code)
     # ... (rest of your existing draw_game_ui logic for towers, cats, enemies)
 
-    budget_text = font.render(f"Budget: {current_budget}", True, (0, 0, 0))
-    screen.blit(budget_text, (50, 10))
+    budget_text = budget_font.render(f"Budget: {current_budget}", True, (0, 0, 0))
+    screen.blit(budget_text, (1080, 10))
 
     pause_rect = pygame.Rect(1100, 50, 150, 50)
     pygame.draw.rect(screen, (100, 100, 255), pause_rect)
@@ -30,7 +30,7 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
         col = idx % max_buttons_per_row
         rect_x = button_x_start + col * button_spacing_x
         rect_y = button_y_start + row * button_spacing_y
-        rect = pygame.Rect(rect_x, rect_y, 100, 50)
+        rect = pygame.Rect(rect_x, rect_y, 100, 60)
         calculated_button_rects[cat_type] = rect
 
     for idx, cat_type in enumerate(selected_cats):

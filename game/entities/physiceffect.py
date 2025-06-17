@@ -4,7 +4,7 @@ import sys, os
 import random
 
 class PhysicEffect:
-    def __init__(self, x, y, frames,duration=1000):
+    def __init__(self, x, y, frames,duration=650):
         self.x = x
         self.y = y
         self.start_time = pygame.time.get_ticks()
