@@ -4,7 +4,7 @@ from ..entities.csmokeeffect import CSmokeEffect
 from ..entities.tower import Tower
 
 _mission_complete_background_image = None
-_mission_complete_background_image_path = "background/mission_complete_bg.jpg"
+_mission_complete_background_image_path = "images/background/mission_complete_bg.jpg"
 
 def load_mission_complete_background_image(screen_width, screen_height):
     """

@@ -14,7 +14,7 @@ class ShockwaveEffect:
 
         self.frames = []
         for i in range(1, 11):  # 假設有 shockwave0.png ~ shockwave4.png
-            img = pygame.image.load(f"shockwave/Explosion_{i}.png").convert_alpha()
+            img = pygame.image.load(f"images/effects/shockwave/Explosion_{i}.png").convert_alpha()
             if self.scale != 1.0:
                 new_size = (int(img.get_width() * self.scale), int(img.get_height() * self.scale))
                 img = pygame.transform.scale(img, new_size)
