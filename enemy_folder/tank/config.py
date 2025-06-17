@@ -21,4 +21,5 @@ enemy_config = {
     "kb_frames": ["enemy_folder/tank/walking/tank_enemy_walking_1.png"],
     "attributes": ["古"],  # Metal and Relic, based on gray color and boss status
     "reward": 13200,  # 假設的獎勵值
+    "attack_type": "gun",  # 攻擊類型
 }

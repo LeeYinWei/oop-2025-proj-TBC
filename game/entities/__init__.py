@@ -7,9 +7,13 @@ from .level import Level
 from .ymanager import YManager
 
 # 匯入輔助 class
+from .electriceffect import ElectricEffect
+from .physiceffect import PhysicEffect
 from .smokeeffect import SmokeEffect
 from .csmokeeffect import CSmokeEffect
 from .shockwaveeffect import ShockwaveEffect
+
+
 from .soul import Soul
 # 匯入常數
 

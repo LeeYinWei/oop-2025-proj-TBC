@@ -9,13 +9,26 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         cat.is_attacking = False
         cat.contact_points = []
         cat.update_smoke_effects()
+        cat.update_physic_effects()
+        cat.update_electric_effects()
+    # 重置敵人狀態
     for enemy in enemies:
         enemy.is_attacking = False
         enemy.contact_points = []
         enemy.update_smoke_effects()
+        enemy.update_physic_effects()
+        enemy.update_electric_effects()
     our_tower.contact_points = []
     if enemy_tower:
         enemy_tower.contact_points = []
+    # 更新塔樓的煙霧和物理特效
+    our_tower.update_smoke_effects()
+    our_tower.update_physic_effects()
+    our_tower.update_electric_effects()
+    if enemy_tower:
+        enemy_tower.update_smoke_effects()
+        enemy_tower.update_physic_effects()
+        enemy_tower.update_electric_effects()
 
     # 檢查新生成的 boss，觸發出場震波
     for enemy in enemies:
@@ -41,7 +54,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         if isinstance(tar, Enemy):
                             enemy = tar
                             old_hp = enemy.hp
-                            enemy.take_damage(cat.atk)
+                            enemy.take_damage(cat.atk, cat.attack_type)
                             if enemy.hp > 0:
                                 thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -54,7 +67,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             
                         elif isinstance(tar, Tower):
                             tower = tar
-                            tower.take_damage(cat.atk)
+                            tower.take_damage(cat.atk, cat.attack_type)
                             contact_rect = cat_attack_zone.clip(tower.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
@@ -62,7 +75,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 else:
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                         tower = enemy_tower
-                        tower.take_damage(cat.atk)
+                        tower.take_damage(cat.atk, cat.attack_type)
                         contact_rect = cat_attack_zone.clip(tower.get_rect())
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)
@@ -71,7 +84,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         for enemy in enemies:
                             if cat_attack_zone.colliderect(enemy.get_rect()):
                                 old_hp = enemy.hp
-                                enemy.take_damage(cat.atk)
+                                enemy.take_damage(cat.atk, cat.attack_type)
                                 if enemy.hp > 0:
                                     thresholds_crossed = int(old_hp / enemy.kb_threshold) - int(enemy.hp / enemy.kb_threshold)
                                     if thresholds_crossed > 0:
@@ -135,7 +148,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         if isinstance(tar, Cat):
                             c = tar
                             old_hp = c.hp
-                            c.take_damage(enemy.atk)
+                            c.take_damage(enemy.atk, enemy.attack_type)
                             if c.hp > 0:
                                 thresholds_crossed = int(old_hp / c.kb_threshold) - int(c.hp / c.kb_threshold)
                                 if thresholds_crossed > 0:
@@ -147,7 +160,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             enemy.contact_points.append(contact_point)
                         elif isinstance(tar, Tower):
                             tower = tar
-                            tower.take_damage(enemy.atk)
+                            tower.take_damage(enemy.atk, enemy.attack_type)
                             contact_rect = enemy_attack_zone.clip(tower.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
@@ -155,7 +168,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 else:
                     if enemy_attack_zone.colliderect(our_tower.get_rect()):
                         tower = our_tower
-                        tower.take_damage(enemy.atk)
+                        tower.take_damage(enemy.atk, enemy.attack_type)
                         contact_rect = enemy_attack_zone.clip(tower.get_rect())
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)
@@ -164,7 +177,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         for cat in cats:
                             if enemy_attack_zone.colliderect(cat.get_rect()):
                                 old_hp = cat.hp
-                                cat.take_damage(enemy.atk)
+                                cat.take_damage(enemy.atk, enemy.attack_type)
                                 if cat.hp > 0:
                                     thresholds_crossed = int(old_hp / cat.kb_threshold) - int(cat.hp / cat.kb_threshold)
                                     if thresholds_crossed > 0:

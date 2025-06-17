@@ -21,4 +21,5 @@ enemy_config = {
     "kb_frames": ["enemy_folder/fast/walking/fast_enemy_walking.png"],
     "attributes": ["異", "天"],  # Alien and Angel, based on fast type and green color
     "reward": 187,  # 假設的獎勵值
+    "attack_type":"physic",  # 攻擊類型
 }
