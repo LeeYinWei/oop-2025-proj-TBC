@@ -1,12 +1,18 @@
 import pygame
 import math
-import sys, os
+import sys
+import os
 import random
 from game.entities.tower import Tower
 from game.config_loader import load_config
 
 class Level:
-    def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path, our_tower_config, enemy_tower_config, tower_distance):
+    def __init__(self, name, enemy_types, spawn_interval, survival_time, background_path,
+                 our_tower_config, enemy_tower_config, tower_distance,
+                 initial_budget, # <--- Added: Initial budget for the level
+                 music_path="audio/default_battle_music.ogg", # <--- Added: Default level music path
+                 switch_music_on_boss=False, # <--- Added: Flag to switch music for boss
+                 boss_music_path="audio/boss_music.ogg"): # <--- Added: Boss music path
         self.name = name
         self.enemy_configs = {et["type"]: load_config("enemy_folder", et["type"]) for et in enemy_types}
         valid_attributes = {"紅", "黑", "天", "鐵", "異", "惡", "死", "古", "無"}
@@ -20,6 +26,7 @@ class Level:
             self.enemy_types.append(et_copy)
         self.spawn_interval = spawn_interval
         self.survival_time = survival_time
+        # Initialize spawned_counts for proper resetting
         self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in self.enemy_types}
         self.all_limited_spawned = False
         self.background = None
@@ -34,7 +41,14 @@ class Level:
         self.our_tower_config = our_tower_config
         self.enemy_tower_config = enemy_tower_config
         self.tower_distance = tower_distance
-        self.reset_towers()
+
+        # --- New Attributes for Level ---
+        self.initial_budget = initial_budget
+        self.music_path = music_path
+        self.switch_music_on_boss = switch_music_on_boss
+        self.boss_music_path = boss_music_path
+
+        self.reset_towers() # Call reset_towers after all configs are set
 
     def reset_towers(self):
         SCREEN_WIDTH = 1280
@@ -67,12 +81,18 @@ class Level:
             is_enemy=True
         )
 
+    def reset_spawn_counts(self):
+        """Resets the spawned counts for all enemy types and their last spawn times."""
+        self.spawned_counts = {(et["type"], et.get("variant", "default")): 0 for et in self.enemy_types}
+        self.last_spawn_times = {(et["type"], et.get("variant", "default")): -et.get("initial_delay", 0) for et in self.enemy_types}
+        self.all_limited_spawned = False # Reset this flag as well
+
     def check_all_limited_spawned(self):
         """Check if all limited enemies have been spawned."""
         for enemy_type in self.enemy_types:
             if enemy_type.get("is_limited", False):
                 key = (enemy_type["type"], enemy_type.get("variant", "default"))
                 spawn_count = enemy_type.get("spawn_count", 0)
-                if spawn_count > 0 and self.spawned_counts[key] < spawn_count:
+                if spawn_count > 0 and self.spawned_counts.get(key, 0) < spawn_count:
                     return False
         return True

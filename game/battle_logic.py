@@ -1,9 +1,15 @@
 from .entities import Enemy, Cat, Soul, Tower, ShockwaveEffect, YManager
 import pygame
 
-def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manager, enemy_y_manager, shockwave_effects=None, current_budget=0):
+# 在函式簽名中加入 battle_sfx 參數，並給予預設值 None，以防止舊的呼叫報錯。
+# 但請務必確保在 main_game_loop.py 中呼叫時傳入 battle_sfx。
+def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manager, enemy_y_manager, shockwave_effects=None, current_budget=0, battle_sfx=None):
     if shockwave_effects is None:
         shockwave_effects = []
+
+    # 確保 battle_sfx 存在且是字典，避免在音效未載入時出錯
+    if battle_sfx is None:
+        battle_sfx = {}
 
     for cat in cats:
         cat.is_attacking = False
@@ -68,6 +74,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             contact_point = contact_rect.center
                             enemy.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
+                            # 播放攻擊到敵方角色音效 (021.ogg)
+                            if battle_sfx.get('hit_unit'):
+                                battle_sfx['hit_unit'].play()
                             
                         elif isinstance(tar, Tower):
                             tower = tar
@@ -76,6 +85,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
+                            # 播放攻擊到敵方塔音效 (022.ogg)
+                            if battle_sfx.get('hit_tower'):
+                                battle_sfx['hit_tower'].play()
                 else:
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
                         tower = enemy_tower
@@ -84,6 +96,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)
                         cat.contact_points.append(contact_point)
+                        # 播放攻擊到敵方塔音效 (022.ogg)
+                        if battle_sfx.get('hit_tower'):
+                            battle_sfx['hit_tower'].play()
                     else:
                         for enemy in enemies:
                             if cat_attack_zone.colliderect(enemy.get_rect()):
@@ -98,6 +113,10 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 contact_point = contact_rect.center
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
+                                # 播放攻擊到敵方角色音效 (021.ogg)
+                                if battle_sfx.get('hit_unit'):
+                                    battle_sfx['hit_unit'].play()
+                                break # 非AOE攻擊，命中一個敵人就停止
                                 
         elif cat.is_aoe:
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
@@ -162,6 +181,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             contact_point = contact_rect.center
                             c.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
+                            # 播放攻擊到我方角色音效 (021.ogg)
+                            if battle_sfx.get('hit_unit'):
+                                battle_sfx['hit_unit'].play()
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.take_damage(enemy.atk, enemy.attack_type)
@@ -169,6 +191,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
+                            # 播放攻擊到我方塔音效 (022.ogg)
+                            if battle_sfx.get('hit_tower'):
+                                battle_sfx['hit_tower'].play()
                 else:
                     if enemy_attack_zone.colliderect(our_tower.get_rect()):
                         tower = our_tower
@@ -177,6 +202,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         contact_point = contact_rect.center
                         tower.contact_points.append(contact_point)
                         enemy.contact_points.append(contact_point)
+                        # 播放攻擊到我方塔音效 (022.ogg)
+                        if battle_sfx.get('hit_tower'):
+                            battle_sfx['hit_tower'].play()
                     else:
                         for cat in cats:
                             if enemy_attack_zone.colliderect(cat.get_rect()):
@@ -191,6 +219,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 contact_point = contact_rect.center
                                 cat.contact_points.append(contact_point)
                                 enemy.contact_points.append(contact_point)
+                                # 播放攻擊到我方角色音效 (021.ogg)
+                                if battle_sfx.get('hit_unit'):
+                                    battle_sfx['hit_unit'].play()
                                 break
         elif enemy.is_aoe:
             targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
@@ -242,7 +273,6 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         else:
             shockwave_effects.remove(effect)
 
-    # Centralized soul creation for enemy deaths
     # 中央處理敵人死亡和獎勵
     new_enemies = []
     for enemy in enemies:
@@ -252,11 +282,14 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
             enemy_y_manager.release_y(enemy.slot_index)
             # 將敵人的獎勵加到 current_budget 中
-            current_budget = current_budget+enemy.reward
+            current_budget = current_budget + enemy.reward
+            # 播放敵人死亡音效 (023.ogg)
+            if battle_sfx.get('unit_die'):
+                battle_sfx['unit_die'].play()
             #print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
     enemies[:] = new_enemies
 
-    # Centralized soul creation for cat deaths
+    # 中央處理貓咪死亡
     new_cats = []
     for cat in cats:
         if cat.hp > 0:
@@ -264,6 +297,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         else:
             souls.append(Soul(cat.x + cat.width // 2, cat.y))
             cat_y_manager.release_y(cat.slot_index)
+            # 播放貓咪死亡音效 (023.ogg)
+            if battle_sfx.get('unit_die'):
+                battle_sfx['unit_die'].play()
     cats[:] = new_cats
 
     if enemy_tower and enemy_tower.hp <= 0:
