@@ -11,6 +11,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         cat.update_smoke_effects()
         cat.update_physic_effects()
         cat.update_electric_effects()
+        cat.update_gas_effects()  # 更新氣體特效
     # 重置敵人狀態
     for enemy in enemies:
         enemy.is_attacking = False
@@ -18,6 +19,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         enemy.update_smoke_effects()
         enemy.update_physic_effects()
         enemy.update_electric_effects()
+        enemy.update_gas_effects()  # 更新氣體特效
     our_tower.contact_points = []
     if enemy_tower:
         enemy_tower.contact_points = []
@@ -25,10 +27,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
     our_tower.update_smoke_effects()
     our_tower.update_physic_effects()
     our_tower.update_electric_effects()
+    our_tower.update_gas_effects()  # 更新氣體特效
     if enemy_tower:
         enemy_tower.update_smoke_effects()
         enemy_tower.update_physic_effects()
         enemy_tower.update_electric_effects()
+        enemy_tower.update_gas_effects()
 
     # 檢查新生成的 boss，觸發出場震波
     for enemy in enemies:

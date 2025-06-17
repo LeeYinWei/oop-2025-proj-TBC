@@ -9,6 +9,7 @@ from game.constants import BOTTOM_Y
 # 如果需要用 load_config
 from game.config_loader import load_config
 
+from game.entities.gaseffect import GasEffect
 from game.entities.electriceffect import ElectricEffect
 from game.entities.smokeeffect import SmokeEffect
 from game.entities.shockwaveeffect import ShockwaveEffect
@@ -86,6 +87,7 @@ class Enemy:
         self.smoke_effects = []  # 儲存煙霧特效實例
         self.physic_effects = []  # 儲存物理特效實例
         self.electric_effects = []  # 儲存電擊特效實例
+        self.gas_effects = []
         self.done_attack = done_attack
         self.slot_index = None  # 儲存使用的 y_slot 索引
         self.reward = reward
@@ -137,6 +139,14 @@ class Enemy:
                     electric_x = center_x + random.randint(-5, 5)
                     electric_y = center_y + random.randint(-5, 5)
                     self.electric_effects.append(ElectricEffect(electric_x, electric_y))
+            elif attack_type == "gas":
+                # 被攻擊時生成氣體特效，3-5 個粒子，位置在角色中心
+                center_x = self.x + self.width // 2
+                center_y = self.y + self.height // 2
+                for _ in range(random.randint(3, 5)):
+                    gas_x = center_x + random.randint(-5, 5)
+                    gas_y = center_y + random.randint(-5, 5)
+                    self.gas_effects.append(GasEffect(gas_x, gas_y))
         thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
             self.knock_back()
@@ -198,6 +208,9 @@ class Enemy:
     def update_electric_effects(self):
         self.electric_effects = [electric for electric in self.electric_effects if electric.update()]
     
+    def update_gas_effects(self):
+        self.gas_effects = [gas for gas in self.gas_effects if gas.update()]
+
     def get_current_frame(self):
         state = "knockback" if self.kb_animation else self.anim_state
         frames = self.anim_frames[state]
@@ -227,6 +240,10 @@ class Enemy:
         # 繪製電擊特效
         for electric in self.electric_effects:
             electric.draw(screen)
+
+        # 繪製氣體特效
+        for gas in self.gas_effects:
+            gas.draw(screen)
         if self.is_boss:
             boss_label = pygame.font.SysFont(None, 20).render("Boss", True, (255, 0, 0))
             screen.blit(boss_label, (self.x, self.y - 20))

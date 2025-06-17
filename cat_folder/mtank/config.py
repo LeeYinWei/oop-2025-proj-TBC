@@ -32,4 +32,5 @@ cat_config = {
     "ibtn_idle": "cat_folder/mtank/ibtn_idle.png",
     "ibtn_hover": "ccat_folder/mtank/ibtn_hover.png",
     "ibtn_pressed": "cat_folder/mtank/ibtn_pressed.png",
+    "attack_type":"gas",
 }
