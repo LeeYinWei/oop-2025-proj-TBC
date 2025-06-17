@@ -62,6 +62,9 @@ if not boss_intro_sfx:
     print("警告: 'audio/TBC/036.ogg' 未找到，Boss 震波音效將不會播放。")
 
 # --- 主遊戲迴圈 ---
+# ... (前面的代碼保持不變，包括音效載入和初始化部分)
+
+# --- 主遊戲迴圈 ---
 async def main_game_loop(screen, clock):
     FPS = 60
     font = pygame.font.SysFont(None, 25)
@@ -284,7 +287,7 @@ async def main_game_loop(screen, clock):
 
         elif game_state == "playing":
             current_level = levels[selected_level]
-            pause_rect = draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map, budget_font)
+            pause_rect, button_rects = draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map, budget_font)
 
             any_boss_present = any(enemy.is_boss for enemy in enemies)
             if any_boss_present and not boss_shockwave_played:
@@ -306,11 +309,37 @@ async def main_game_loop(screen, clock):
                 if event.type == pygame.QUIT:
                     return
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if pause_rect.collidepoint(event.pos):
+                    pos = event.pos
+                    if pause_rect.collidepoint(pos):
                         game_state = "paused"
                         pygame.mixer.music.pause()
                         if key_action_sfx.get('other_button'):
                             key_action_sfx['other_button'].play()
+                    # 滑鼠點擊出擊邏輯
+                    for cat_type, rect in button_rects.items():
+                        if rect.collidepoint(pos):
+                            cost = cat_costs.get(cat_type, 0)
+                            cooldown = cat_cooldowns.get(cat_type, 0)
+                            can_deploy = current_budget >= cost and (current_time - last_spawn_time.get(cat_type, 0) >= cooldown)
+                            if can_deploy:
+                                current_budget -= cost
+                                our_tower_center = current_level.our_tower.x + current_level.our_tower.width / 2
+                                cat_y, cat_slot = cat_y_manager.get_available_y()
+                                cat = cat_types[cat_type](our_tower_center, cat_y)
+                                cat.slot_index = cat_slot
+                                start_x = our_tower_center - cat.width / 2 - 90
+                                cat.x = start_x
+                                cats.append(cat)
+                                last_spawn_time[cat_type] = current_time
+                                if cat_spawn_sfx.get('default'):
+                                    cat_spawn_sfx['default'].play()
+                                if key_action_sfx.get('can_deploy'):
+                                    key_action_sfx['can_deploy'].play()
+                                print(f"通過滑鼠生成了 {cat_type} 在 ({cat.x}, {cat.y})")
+                            else:
+                                if key_action_sfx.get('cannot_deploy'):
+                                    key_action_sfx['cannot_deploy'].play()
+                                print(f"無法生成 '{cat_type}': {'金錢不足' if current_budget < cost else '冷卻中'}")
                 elif event.type == pygame.KEYDOWN:
                     if event.key in cat_key_map:
                         cat_type = cat_key_map[event.key]
@@ -449,6 +478,7 @@ async def main_game_loop(screen, clock):
                         print("恢復戰鬥。")
 
         elif game_state == "end":
+
             current_level = levels[selected_level]
             is_last_level = selected_level == len(levels) - 1
             is_first_completion = selected_level not in completed_levels
@@ -463,7 +493,8 @@ async def main_game_loop(screen, clock):
                     busy_channels = sum(pygame.mixer.Channel(i).get_busy() for i in range(pygame.mixer.get_num_channels()))
                     print(f"播放勝利音效，當前使用頻道數: {busy_channels}")
 
-            draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower, victory_display_time)
+            # 使用 draw_end_screen 返回的 continue_rect
+            continue_rect = draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower, victory_display_time)
             pygame.display.flip()
 
             for event in pygame.event.get():
@@ -482,7 +513,37 @@ async def main_game_loop(screen, clock):
                         if status == "victory" and is_last_level and is_first_completion:
                             game_state = "ending"
                             pygame.time.ending_start_time = pygame.time.get_ticks()
-                            # 音樂初始化移至 ending 狀態
+                            print("準備進入結局動畫。")
+                        else:
+                            game_state = "level_selection"
+                            our_tower = None
+                            enemy_tower = None
+                            cats.clear()
+                            enemies.clear()
+                            souls.clear()
+                            shockwave_effects.clear()
+                            current_budget = 1000
+                        pygame.mixer.music.stop()
+                        current_bgm_path = None
+                        boss_music_active = False
+                        boss_shockwave_played = False
+                        setattr(pygame.time, "victory_display_time", 0)
+                        if key_action_sfx.get('other_button'):
+                            key_action_sfx['other_button'].play()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    if continue_rect and continue_rect.collidepoint(pos):
+                        if status == "victory" and is_first_completion:
+                            completed_levels.add(selected_level)
+                            try:
+                                with open(save_file, "w") as f:
+                                    json.dump(list(completed_levels), f)
+                                print(f"儲存關卡 {selected_level} 完成進度。")
+                            except Exception as e:
+                                print(f"儲存進度時發生錯誤: {e}")
+                        if status == "victory" and is_last_level and is_first_completion:
+                            game_state = "ending"
+                            pygame.time.ending_start_time = pygame.time.get_ticks()
                             print("準備進入結局動畫。")
                         else:
                             game_state = "level_selection"
@@ -583,3 +644,10 @@ async def main_game_loop(screen, clock):
 
         await asyncio.sleep(0)
         clock.tick(FPS)
+
+
+
+
+
+
+

@@ -2,6 +2,10 @@ import pygame
 
 from ..entities import cat_types, cat_costs, cat_cooldowns
 
+import pygame
+
+from ..entities import cat_types, cat_costs, cat_cooldowns
+
 def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map, budget_font):
     background_color = (200, 255, 200)
     screen.fill(background_color)
@@ -64,4 +68,8 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, fill_width, bar_height))
                 pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 1)
 
-    return pause_rect
+    # 更新 button_rects 參數以與 calculated_button_rects 同步
+    button_rects.clear()
+    button_rects.update(calculated_button_rects)
+
+    return pause_rect, calculated_button_rects  # 返回 pause_rect 和 calculated_button_rects
