@@ -55,6 +55,6 @@ level_config = {
     "tower_distance": 1000,
     "initial_budget": 1000, # <--- ADD THIS LINE with a starting budget for this level
     "music_path": "audio/TBC/118.ogg", # <--- ADD THIS LINE with the path to the level's background music
-    "switch_music_on_boss": True, # <--- ADD THIS LINE (set to True if you want music to change when a boss appears)
+    "switch_music_on_boss": False, # <--- ADD THIS LINE (set to True if you want music to change when a boss appears)
     "boss_music_path": "audio/TBC/119.ogg" # <--- ADD THIS LINE (path to boss music, only relevant if switch_music_on_boss is True)
 }
