@@ -4,7 +4,7 @@ import sys, os
 import random
 
 class PhysicEffect:
-    def __init__(self, x, y, duration=1000):
+    def __init__(self, x, y, frames,duration=1000):
         self.x = x
         self.y = y
         self.start_time = pygame.time.get_ticks()
@@ -13,15 +13,8 @@ class PhysicEffect:
         self.scale = random.uniform(0.1, 0.2)  # 隨機煙霧大小
         self.color = (150, 150, 150)  # 灰色煙霧
 
-        self.frames = []
-        for i in range(1, 11, 2):  # 假設有 shockwave0.png ~ shockwave4.png
-            img = pygame.image.load(f"physic/physic_{i}.png").convert_alpha()
-            if self.scale != 1.0:
-                new_size = (int(img.get_width() * self.scale), int(img.get_height() * self.scale))
-                img = pygame.transform.scale(img, new_size)
-            image_copy = img.copy()
-            image_copy.set_alpha(self.alpha)
-            self.frames.append(image_copy)
+        self.frames = frames
+        
 
     def update(self):
         current_time = pygame.time.get_ticks()

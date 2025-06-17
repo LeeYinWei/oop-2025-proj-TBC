@@ -8,7 +8,7 @@ from game.entities.smokeeffect import SmokeEffect
 from game.entities.csmokeeffect import CSmokeEffect
 from game.entities.physiceffect import PhysicEffect
 from game.entities.electriceffect import ElectricEffect
-
+from game.constants import smoke_images, electric_images, gas_images, physic_images
 class Tower:
     def __init__(self, x, y, hp, color=(100, 100, 255), tower_path=None, width=120, height=400, is_enemy=False):
         self.x = x
@@ -108,7 +108,7 @@ class Tower:
                 for _ in range(random.randint(3, 5)):
                     smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
                     smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
-                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y, smoke_images))
             elif attack_type == "physic":
                 # 被攻擊時生成物理特效，3-5 個粒子，位置在角色中心
                 center_x = self.x + self.width // 2
@@ -116,7 +116,7 @@ class Tower:
                 for _ in range(random.randint(3, 5)):
                     physic_x = center_x + random.randint(-5, 5)
                     physic_y = center_y + random.randint(-5, 5)
-                    self.physic_effects.append(PhysicEffect(physic_x, physic_y))
+                    self.physic_effects.append(PhysicEffect(physic_x, physic_y, physic_images))
             elif attack_type == "electric":
                 # 被攻擊時生成電擊特效，3-5 個粒子，位置在角色中心
                 center_x = self.x + self.width // 2
@@ -124,7 +124,7 @@ class Tower:
                 for _ in range(random.randint(3, 5)):
                     electric_x = center_x + random.randint(-5, 5)
                     electric_y = center_y + random.randint(-5, 5)
-                    self.electric_effects.append(ElectricEffect(electric_x, electric_y))
+                    self.electric_effects.append(ElectricEffect(electric_x, electric_y, electric_images))
 
             elif attack_type == "gas":  
                 # 被攻擊時生成氣體特效，3-5 個粒子，位置在角色中心
@@ -133,7 +133,7 @@ class Tower:
                 for _ in range(random.randint(3, 5)):
                     gas_x = center_x + random.randint(-5, 5)
                     gas_y = center_y + random.randint(-5, 5)
-                    self.gas_effects.append(GasEffect(gas_x, gas_y))
+                    self.gas_effects.append(GasEffect(gas_x, gas_y, gas_images))
 
     def update_smoke_effects(self):
         self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]

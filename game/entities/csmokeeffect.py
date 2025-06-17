@@ -4,7 +4,7 @@ import sys, os
 import random
 
 class CSmokeEffect:
-    def __init__(self, x1, y1, x2, y2, duration=1000):
+    def __init__(self, x1, y1, x2, y2, frames1, frames2,  duration=1000):
         self.x1 = x1#for type1
         self.y1 = y1
         self.x2 = x2#for type2
@@ -16,22 +16,8 @@ class CSmokeEffect:
         self.scale2 = random.uniform(0.4, 0.6)
         self.color = (150, 150, 150)  # 灰色煙霧
 
-        self.frames1 = []
-        self.frames2 = []
-        for i in range(1, 11, 2):  # 假設有 shockwave0.png ~ shockwave4.png
-            img1 = pygame.image.load(f"smoke/collapsed_{i}.png").convert_alpha()
-            img2 = pygame.image.load(f"smoke/collapsed_v2_{i}.png").convert_alpha()
-            new_size1 = (int(img1.get_width() * self.scale1), int(img1.get_height() * self.scale1))
-            new_size2 = (int(img2.get_width() * self.scale2), int(img2.get_height() * self.scale2))
-            img1 = pygame.transform.scale(img1, new_size1)
-            img2 = pygame.transform.scale(img2, new_size2)
-
-            image_copy1 = img1.copy()
-            image_copy1.set_alpha(self.alpha)
-            self.frames1.append(image_copy1)
-            image_copy2 = img2.copy()
-            image_copy2.set_alpha(self.alpha)
-            self.frames2.append(image_copy2)
+        self.frames1 = frames1
+        self.frames2 = frames2
 
     
         '''
