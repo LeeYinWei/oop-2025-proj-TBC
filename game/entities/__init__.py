@@ -7,6 +7,7 @@ from .level import Level
 from .ymanager import YManager
 
 # 匯入輔助 class
+from .gaseffect import GasEffect
 from .electriceffect import ElectricEffect
 from .physiceffect import PhysicEffect
 from .smokeeffect import SmokeEffect

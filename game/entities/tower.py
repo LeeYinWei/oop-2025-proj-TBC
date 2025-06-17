@@ -3,6 +3,7 @@ import math
 import sys, os
 import random
 
+from game.entities.gaseffect import GasEffect
 from game.entities.smokeeffect import SmokeEffect
 from game.entities.csmokeeffect import CSmokeEffect
 from game.entities.physiceffect import PhysicEffect
@@ -27,6 +28,7 @@ class Tower:
         self.csmoke_effects = []
         self.physic_effects = []  # 儲存物理特效實例
         self.electric_effects = []
+        self.gas_effects = []
         self.shake_duration = 200  # 抖動持續時間（毫秒）
         self.shake_magnitude = 5   # 抖動幅度（像素）
         self.shake_start_time = 0
@@ -76,6 +78,9 @@ class Tower:
         for electric in self.electric_effects:
             electric.draw(screen)
 
+        for gas in self.gas_effects:
+            gas.draw(screen)
+
     def draw_hp_bar(self, screen):
         bar_width = self.width
         bar_height = 5
@@ -121,6 +126,15 @@ class Tower:
                     electric_y = center_y + random.randint(-5, 5)
                     self.electric_effects.append(ElectricEffect(electric_x, electric_y))
 
+            elif attack_type == "gas":  
+                # 被攻擊時生成氣體特效，3-5 個粒子，位置在角色中心
+                center_x = self.x + self.width // 2
+                center_y = self.y + self.height // 2
+                for _ in range(random.randint(3, 5)):
+                    gas_x = center_x + random.randint(-5, 5)
+                    gas_y = center_y + random.randint(-5, 5)
+                    self.gas_effects.append(GasEffect(gas_x, gas_y))
+
     def update_smoke_effects(self):
         self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
 
@@ -130,6 +144,9 @@ class Tower:
     def update_electric_effects(self):
         self.electric_effects = [electric for electric in self.electric_effects if electric.update()]
 
+    def update_gas_effects(self):
+        self.gas_effects = [gas for gas in self.gas_effects if gas.update()]
+        
     def draw_collapse(self, screen):
         if self.image:
             elapsed = pygame.time.get_ticks() - self.collapsing_start_time
