@@ -106,8 +106,11 @@ except pygame.error as e:
 # --- 主遊戲迴圈 ---
 async def main_game_loop(screen, clock):
     FPS = 60
-    font = pygame.font.SysFont(None, 24)
+    font = pygame.font.SysFont(None, 25)
     end_font = pygame.font.SysFont(None, 96)
+    select_font = pygame.font.SysFont(None, 60)
+    square_surface = pygame.Surface((1220, 480), pygame.SRCALPHA)
+    square_surface.fill((150, 150, 150, 100))  # 50% 透明
     game_state = "intro" # 遊戲初始狀態
     from .battle_logic import update_battle
     from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
@@ -227,7 +230,7 @@ async def main_game_loop(screen, clock):
             boss_shockwave_played_for_this_boss = False # 重設震波音效旗標
 
 
-            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images)
+            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, select_font, completed_levels, cat_images, square_surface)
             pygame.display.flip()
 
             for event in pygame.event.get():
