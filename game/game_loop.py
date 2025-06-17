@@ -95,7 +95,13 @@ async def main_game_loop(screen, clock):
                 print("Intro animation completed")
 
         elif game_state == "level_selection":
-            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images)
+            # 確保在關卡選擇介面時音樂已停止
+            if pygame.mixer.music.get_busy() and current_bgm_path is not None:
+                pygame.mixer.music.stop()
+                current_bgm_path = None
+            boss_music_active = False # 重設首領音樂旗標
+
+            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
             pygame.display.flip()
 
             for event in pygame.event.get():
