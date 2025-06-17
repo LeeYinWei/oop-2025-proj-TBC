@@ -5,7 +5,7 @@ import os
 from .entities import cat_types, cat_costs, cat_cooldowns
 from game.entities.csmokeeffect import CSmokeEffect
 from game.entities.tower import Tower
-
+# =============================================================================================================
 # 新增一個變數來儲存背景圖片
 _intro_background_image = None
 _intro_background_image_path = "background/background_intro.jpg"
@@ -120,7 +120,7 @@ def draw_intro_screen(screen, font, y_offset, fade_alpha):
     screen.blit(skip_text, skip_text_rect)
 
     return skip_rect
-
+# =============================================================================================================
 _level_selection_background_image = None
 _level_selection_background_image_path = "background/level_selection_bg.png"
 
@@ -183,7 +183,7 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
     screen.blit(font.render("Click to select level, click to toggle cats, press Enter to start", True, (255, 255, 255)), (50, 540))
 
     return cat_rects, reset_rect, quit_rect
-
+# =============================================================================================================
 def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map):
     background_color = (200, 255, 200)
     screen.fill(background_color)
@@ -247,7 +247,7 @@ def draw_game_ui(screen, current_level, current_budget, enemy_tower, current_tim
                 pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 1)
 
     return pause_rect
-
+# =============================================================================================================
 def draw_pause_menu(screen, font, current_level):
     screen.blit(current_level.background, (0, 0))
     # 新增一層透明的遮罩
@@ -267,7 +267,7 @@ def draw_pause_menu(screen, font, current_level):
     screen.blit(end_text, (end_rect.x + 50, end_rect.y + 15))
     screen.blit(continue_text, (continue_rect.x + 50, continue_rect.y + 15))
     return end_rect, continue_rect
-
+# =============================================================================================================
 _mission_complete_background_image = None
 _mission_complete_background_image_path = "background/mission_complete_bg.jpg"
 
@@ -287,7 +287,7 @@ def load_mission_complete_background_image(screen_width, screen_height):
             print(f"Error loading mission complete background image: {e}")
             _mission_complete_background_image = None
     return _mission_complete_background_image
-
+# =============================================================================================================
 _ending_background_image = None
 _ending_background_image_path = "background/1a901572-aa72-4382-b64f-b0d60c1b9cc3.jpg"
 
@@ -308,6 +308,41 @@ def load_ending_background_image(screen_width, screen_height):
             _ending_background_image = None
     return _ending_background_image
 
+
+
+def draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower, start_time):
+    # 背景
+    screen.blit(current_level.background, (0, 0))
+
+    # 時間差，用於動畫進度（最大1秒內完成）
+    elapsed = pygame.time.get_ticks() - start_time
+    scale_progress = min(1.0, elapsed / 1500.0)  # 0~1 之間
+
+    # 動畫縮放參數
+    base_font_size = 40
+    max_font_size = 120
+    animated_font_size = int(base_font_size + (max_font_size - base_font_size) * scale_progress)
+
+    # 建立縮放字體物件
+    animated_font = pygame.font.SysFont("Arial", animated_font_size)
+
+    if status == "victory":
+        enemy_tower.draw_collapse(screen)
+        text_surface = animated_font.render("Victory!", True, (0, 255, 100))
+        text_rect = text_surface.get_rect(center=(640, 300))  # 螢幕中央
+        screen.blit(text_surface, text_rect)
+        if scale_progress == 1.0:
+            screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (460, 400))
+
+    elif status == "lose":
+        our_tower.draw_collapse(screen)
+        text_surface = animated_font.render("Defeat!", True, (255, 100, 100))
+        text_rect = text_surface.get_rect(center=(640, 300))
+        screen.blit(text_surface, text_rect)
+        if scale_progress == 1.0:
+            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (460, 400))
+
+# =============================================================================================================
 def draw_ending_animation(screen, font, y_offset, fade_alpha):
     """
     繪製遊戲結尾動畫，包含淡入和文字滾動效果。
@@ -367,35 +402,3 @@ def draw_ending_animation(screen, font, y_offset, fade_alpha):
     screen.blit(skip_text, skip_text_rect)
 
     return skip_rect
-
-def draw_end_screen(screen, current_level, status, end_font, font, our_tower, enemy_tower, start_time):
-    # 背景
-    screen.blit(current_level.background, (0, 0))
-
-    # 時間差，用於動畫進度（最大1秒內完成）
-    elapsed = pygame.time.get_ticks() - start_time
-    scale_progress = min(1.0, elapsed / 1500.0)  # 0~1 之間
-
-    # 動畫縮放參數
-    base_font_size = 40
-    max_font_size = 120
-    animated_font_size = int(base_font_size + (max_font_size - base_font_size) * scale_progress)
-
-    # 建立縮放字體物件
-    animated_font = pygame.font.SysFont("Arial", animated_font_size)
-
-    if status == "victory":
-        enemy_tower.draw_collapse(screen)
-        text_surface = animated_font.render("Victory!", True, (0, 255, 100))
-        text_rect = text_surface.get_rect(center=(640, 300))  # 螢幕中央
-        screen.blit(text_surface, text_rect)
-        if scale_progress == 1.0:
-            screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (460, 400))
-
-    elif status == "lose":
-        our_tower.draw_collapse(screen)
-        text_surface = animated_font.render("Defeat!", True, (255, 100, 100))
-        text_rect = text_surface.get_rect(center=(640, 300))
-        screen.blit(text_surface, text_rect)
-        if scale_progress == 1.0:
-            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (460, 400))
