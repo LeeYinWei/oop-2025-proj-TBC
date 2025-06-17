@@ -23,7 +23,7 @@ def load_level_selection_background_image(screen_width, screen_height):
             _level_selection_background_image = None
     return _level_selection_background_image
 
-def draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images):
+def draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images = []):
     background_image = load_level_selection_background_image(screen.get_width(), screen.get_height())
     if background_image:
         screen.blit(background_image, (0, 0))
