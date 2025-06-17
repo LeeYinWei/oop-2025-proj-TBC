@@ -2,7 +2,9 @@ import json
 import os
 import asyncio
 import pygame
-from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager, CSmokeEffect
+
+from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect, load_cat_images
+
 from .battle_logic import update_battle
 from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
 
@@ -151,7 +153,10 @@ async def main_game_loop(screen, clock):
     cat_key_map = {pygame.K_1 + i: cat_type for i, cat_type in enumerate(selected_cats[:10])}
     button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
 
-    # 開場動畫/結局動畫變數
+
+    cat_images = load_cat_images()
+    # Intro animation variables
+
     intro_start_time = pygame.time.get_ticks()
     intro_duration = 35000  # 總時長
     fade_in_duration = 5000  # 淡入時長
@@ -204,12 +209,18 @@ async def main_game_loop(screen, clock):
                 print("開場動畫播放完畢。")
 
         elif game_state == "level_selection":
+
+            # 確保在關卡選擇介面時音樂已停止
+
             # 確保在關卡選擇介面時沒有背景音樂
+
             if pygame.mixer.music.get_busy() and current_bgm_path is not None:
                 pygame.mixer.music.stop()
                 current_bgm_path = None
             boss_music_active = False # 重設首領音樂旗標
+
             boss_shockwave_played_for_this_boss = False # 重設震波音效旗標
+
 
             cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
             pygame.display.flip()

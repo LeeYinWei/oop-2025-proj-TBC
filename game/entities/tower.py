@@ -146,7 +146,7 @@ class Tower:
 
     def update_gas_effects(self):
         self.gas_effects = [gas for gas in self.gas_effects if gas.update()]
-        
+
     def draw_collapse(self, screen):
         if self.image:
             elapsed = pygame.time.get_ticks() - self.collapsing_start_time

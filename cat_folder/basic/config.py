@@ -29,4 +29,5 @@ cat_config = {
     "ibtn_hover": "ccat_folder/basic/ibtn_hover.png",
     "ibtn_pressed": "cat_folder/basic/ibtn_pressed.png",
     "attack_type": "physic",  # 攻擊類型
+    "cat_image": "cat_folder/basic/cat_image.png",  # 放在levelselection的貓咪圖片
 }

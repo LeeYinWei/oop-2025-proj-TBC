@@ -32,4 +32,5 @@ cat_config = {
     "ibtn_hover": "ccat_folder/tank/ibtn_hover.png",
     "ibtn_pressed": "cat_folder/tank/ibtn_pressed.png",
     "attack_type": "physic",  # 攻擊類型
+    "cat_image": "cat_folder/tank/cat_image.png",  # 放在levelselection的貓咪圖片
 }

@@ -3,6 +3,7 @@ import sys
 from game.entities.cat import Cat
 from game.config_loader import load_config
 from collections import defaultdict
+import pygame
 
 
 cat_types = {}
@@ -13,6 +14,7 @@ cat_button_images = defaultdict(lambda: {
     "hover": None,
     "pressed": None
 })
+cat_images_path = {}
 
 cat_folder = "cat_folder"
 
@@ -41,8 +43,18 @@ if os.path.exists(cat_folder):
                 cat_button_images[cat_type]["idle"] = config.get("ibtn_idle")
                 cat_button_images[cat_type]["hover"] = config.get("ibtn_hover")
                 cat_button_images[cat_type]["pressed"] = config.get("ibtn_pressed")
+                cat_images_path[cat_type] = config.get("cat_image")# 放在levelselection的貓咪圖片 
             except Exception as e:
                 print(f"Error loading cat config for '{cat_type}': {e}")
 else:
     print(f"Directory '{cat_folder}' not found")
     sys.exit()
+
+# entities.py
+def load_cat_images():
+    images = {}
+    for cat_type in cat_types:
+        img = pygame.image.load(cat_images_path[cat_type])
+        img = pygame.transform.scale(img, (180, 270)) 
+        images[cat_type] = img.convert_alpha() if pygame.display.get_init() else img
+    return images

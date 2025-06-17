@@ -27,4 +27,5 @@ cat_config = {
     "ibtn_pressed": "cat_folder/eraser/ibtn_pressed.png",
     "attack_type": "physic",  # 攻擊類型
     "attack_type": "physic",  # 攻擊類型
+    "cat_image": "cat_folder/eraser/cat_image.png",  # 放在levelselection的貓咪圖片
 }
