@@ -4,7 +4,7 @@ import os
 from ..entities import cat_types, cat_costs, cat_cooldowns
 
 _intro_background_image = None
-_intro_background_image_path = "background/background_intro.jpg"
+_intro_background_image_path = "images/background/background_intro.jpg"
 
 def load_intro_background_image(screen_width, screen_height):
     """
@@ -72,7 +72,7 @@ def draw_intro_screen(screen, font, y_offset, fade_alpha):
         screen.fill((0, 0, 0))
         print("Warning: Intro background image not loaded or found, using black background.")
 
-    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "background", "backgroundStory.txt")
+    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "images/background", "backgroundStory.txt")
     raw_story_content = ""
     if os.path.exists(story_file):
         try:

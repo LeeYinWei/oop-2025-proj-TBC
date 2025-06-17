@@ -37,20 +37,20 @@ level_config = {
     ],
     "spawn_interval": 2500,
     "survival_time": 90,
-    "background_path": "background/background4.png",
+    "background_path": "images/background/background4.png",
     "our_tower": {
         "y": 140,
         "width": 350,
         "height": 350,
         "hp": 600,
-        "tower_path": "tower/our_tower.png"
+        "tower_path": "images/tower/our_tower.png"
     },
     "enemy_tower": {
         "y": 150,
         "width": 350,
         "height": 350,
         "hp": 600,
-        "tower_path": "tower/enemy_tower.png"
+        "tower_path": "images/tower/enemy_tower.png"
     },
     "tower_distance": 900,
     "initial_budget": 1000, # <--- ADD THIS LINE with a starting budget for this level

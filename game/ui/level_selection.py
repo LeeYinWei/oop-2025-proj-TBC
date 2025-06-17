@@ -4,7 +4,7 @@ import os
 from ..entities import cat_types, cat_costs, cat_cooldowns
 
 _level_selection_background_image = None
-_level_selection_background_image_path = "background/level_selection_bg.png"
+_level_selection_background_image_path = "images/background/level_selection_bg.png"
 
 def load_level_selection_background_image(screen_width, screen_height):
     """

@@ -2,7 +2,7 @@ import pygame
 import os
 
 _ending_background_image = None
-_ending_background_image_path = "background/1a901572-aa72-4382-b64f-b0d60c1b9cc3.jpg"
+_ending_background_image_path = "images/background/1a901572-aa72-4382-b64f-b0d60c1b9cc3.jpg"
 
 def load_ending_background_image(screen_width, screen_height):
     """
@@ -70,7 +70,7 @@ def draw_ending_animation(screen, font, y_offset, fade_alpha):
         print("Warning: Ending background image not loaded or found, using black background.")
 
     # Load ending story from file
-    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "background", "mission_complete_story.txt")
+    story_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "images/background", "mission_complete_story.txt")
     raw_story_content = ""
     if os.path.exists(story_file):
         try:
