@@ -230,7 +230,9 @@ async def main_game_loop(screen, clock):
             boss_shockwave_played_for_this_boss = False # 重設震波音效旗標
 
 
+
             cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, select_font, completed_levels, cat_images, square_surface)
+
             pygame.display.flip()
 
             for event in pygame.event.get():
