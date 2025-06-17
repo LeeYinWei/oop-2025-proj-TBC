@@ -52,7 +52,7 @@ level_config = {
         "hp": 600,
         "tower_path": "tower/enemy_tower.png"
     },
-    "tower_distance": 1000,
+    "tower_distance": 900,
     "initial_budget": 1000, # <--- ADD THIS LINE with a starting budget for this level
     "music_path": "audio/TBC/118.ogg", # <--- ADD THIS LINE with the path to the level's background music
     "switch_music_on_boss": False, # <--- ADD THIS LINE (set to True if you want music to change when a boss appears)
