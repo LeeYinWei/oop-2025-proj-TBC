@@ -55,6 +55,6 @@ def load_cat_images():
     images = {}
     for cat_type in cat_types:
         img = pygame.image.load(cat_images_path[cat_type])
-        img = pygame.transform.scale(img, (180, 270)) 
+        img = pygame.transform.scale(img, (180, 255)) 
         images[cat_type] = img.convert_alpha() if pygame.display.get_init() else img
     return images
