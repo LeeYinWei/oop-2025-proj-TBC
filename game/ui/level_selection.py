@@ -23,9 +23,7 @@ def load_level_selection_background_image(screen_width, screen_height):
             _level_selection_background_image = None
     return _level_selection_background_image
 
-
-def draw_level_selection(screen, levels, selected_level, selected_cats, font,select_font, completed_levels, cat_images,square_surface):
-
+def draw_level_selection(screen, levels, selected_level, selected_cats, font, select_font, completed_levels, cat_images, square_surface):
     background_image = load_level_selection_background_image(screen.get_width(), screen.get_height())
     if background_image:
         screen.blit(background_image, (0, 0))
@@ -75,6 +73,12 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font,sel
     quit_text = font.render("Quit", True, (255, 255, 255))
     screen.blit(quit_text, (quit_rect.x + 70, quit_rect.y + 15))
 
-    screen.blit(font.render("Click to select level, click to toggle cats, press Enter to start", True, (255, 255, 255)), (50, 540))
+    # 添加開始按鈕
+    start_rect = pygame.Rect(50, 540, 200, 50)
+    pygame.draw.rect(screen, (0, 128, 0), start_rect)  # 綠色按鈕
+    start_text = font.render("Start", True, (255, 255, 255))
+    screen.blit(start_text, (start_rect.x + 70, start_rect.y + 15))
 
-    return cat_rects, reset_rect, quit_rect
+    screen.blit(font.render("Click to select level, click to toggle cats, click Start to begin", True, (255, 255, 255)), (50, 600))
+
+    return cat_rects, reset_rect, quit_rect, start_rect

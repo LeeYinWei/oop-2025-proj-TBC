@@ -11,9 +11,7 @@ pygame.mixer.init()
 print(f"混音器初始化，通道數: {pygame.mixer.get_num_channels()}")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.set_num_channels(16)  # 增加到 16 個頻道
-
 print(f"設置頻道數: {pygame.mixer.get_num_channels()}")
-
 
 # --- 音效載入 ---
 # 貓咪生成音效
@@ -62,9 +60,6 @@ if not boss_intro_sfx:
     print("警告: 'audio/TBC/036.ogg' 未找到，Boss 震波音效將不會播放。")
 
 # --- 主遊戲迴圈 ---
-# ... (前面的代碼保持不變，包括音效載入和初始化部分)
-
-# --- 主遊戲迴圈 ---
 async def main_game_loop(screen, clock):
     FPS = 60
     font = pygame.font.SysFont(None, 25)
@@ -86,7 +81,7 @@ async def main_game_loop(screen, clock):
     boss_music_active = False
     boss_shockwave_played = False
 
-    # 載入已完成關卡
+    # 臨時禁用本地進度保存（瀏覽器不支援文件 I/O）
     completed_levels = set()
     save_file = "completed_levels.json"
     try:
@@ -176,7 +171,7 @@ async def main_game_loop(screen, clock):
             boss_music_active = False
             boss_shockwave_played = False
 
-            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, select_font, completed_levels, cat_images, square_surface)
+            cat_rects, reset_rect, quit_rect, start_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, select_font, completed_levels, cat_images, square_surface)
             pygame.display.flip()
 
             for event in pygame.event.get():
@@ -208,6 +203,7 @@ async def main_game_loop(screen, clock):
                                 key_action_sfx['other_button'].play()
                     if reset_rect.collidepoint(pos):
                         completed_levels.clear()
+                        # 臨時禁用儲存
                         if os.path.exists(save_file):
                             os.remove(save_file)
                         try:
@@ -223,8 +219,7 @@ async def main_game_loop(screen, clock):
                         if key_action_sfx.get('other_button'):
                             key_action_sfx['other_button'].play()
                         return
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if start_rect.collidepoint(pos):
                         if selected_level == 0 or (selected_level - 1) in completed_levels:
                             if selected_cats:
                                 game_state = "playing"
@@ -234,25 +229,25 @@ async def main_game_loop(screen, clock):
                                 enemy_tower = current_level.enemy_tower
                                 our_tower.csmoke_effects.extend([
                                     CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 - 30,
-                                               our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 + 30,
-                                               csmoke_images1, csmoke_images2, 1000),
+                                            our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 + 30,
+                                            csmoke_images1, csmoke_images2, 1000),
                                     CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 10,
-                                               our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 20,
-                                               csmoke_images1, csmoke_images2, 1000),
+                                            our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 20,
+                                            csmoke_images1, csmoke_images2, 1000),
                                     CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2 + 40,
-                                               our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2,
-                                               csmoke_images1, csmoke_images2, 1000)
+                                            our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2,
+                                            csmoke_images1, csmoke_images2, 1000)
                                 ])
                                 enemy_tower.csmoke_effects.extend([
                                     CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2 - 20,
-                                               enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3 + 20,
-                                               csmoke_images1, csmoke_images2, 1000),
+                                            enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3 + 20,
+                                            csmoke_images1, csmoke_images2, 1000),
                                     CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2 + 30,
-                                               enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2,
-                                               csmoke_images1, csmoke_images2, 1000),
+                                            enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2,
+                                            csmoke_images1, csmoke_images2, 1000),
                                     CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2 + 50,
-                                               enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2 + 60,
-                                               csmoke_images1, csmoke_images2, 1000)
+                                            enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2 + 60,
+                                            csmoke_images1, csmoke_images2, 1000)
                                 ])
                                 current_level.reset_spawn_counts()
                                 cats.clear()
@@ -284,6 +279,69 @@ async def main_game_loop(screen, clock):
                         else:
                             if key_action_sfx.get('cannot_deploy'):
                                 key_action_sfx['cannot_deploy'].play()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        if selected_level == 0 or (selected_level - 1) in completed_levels:
+                            if selected_cats:
+                                game_state = "playing"
+                                current_level = levels[selected_level]
+                                current_level.reset_towers()
+                                our_tower = current_level.our_tower
+                                enemy_tower = current_level.enemy_tower
+                                our_tower.csmoke_effects.extend([
+                                    CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 - 30,
+                                            our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 + 30,
+                                            csmoke_images1, csmoke_images2, 1000),
+                                    CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 10,
+                                            our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 20,
+                                            csmoke_images1, csmoke_images2, 1000),
+                                    CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2 + 40,
+                                            our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2,
+                                            csmoke_images1, csmoke_images2, 1000)
+                                ])
+                                enemy_tower.csmoke_effects.extend([
+                                    CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2 - 20,
+                                            enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3 + 20,
+                                            csmoke_images1, csmoke_images2, 1000),
+                                    CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2 + 30,
+                                            enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2,
+                                            csmoke_images1, csmoke_images2, 1000),
+                                    CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2 + 50,
+                                            enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2 + 60,
+                                            csmoke_images1, csmoke_images2, 1000)
+                                ])
+                                current_level.reset_spawn_counts()
+                                cats.clear()
+                                souls.clear()
+                                enemies.clear()
+                                shockwave_effects.clear()
+                                current_budget = current_level.initial_budget
+                                last_budget_increase_time = current_time - 333
+                                last_spawn_time = {cat_type: 0 for cat_type in cat_types}
+                                status = None
+                                level_start_time = current_time
+                                if current_level.music_path and os.path.exists(current_level.music_path):
+                                    pygame.mixer.music.load(current_level.music_path)
+                                    pygame.mixer.music.play(-1)
+                                    current_bgm_path = current_level.music_path
+                                    boss_music_active = False
+                                else:
+                                    print(f"警告: 關卡音樂 '{current_level.music_path}' 未找到。")
+                                    pygame.mixer.music.stop()
+                                    current_bgm_path = None
+                                boss_shockwave_played = False
+                                if key_action_sfx.get('other_button'):
+                                    key_action_sfx['other_button'].play()
+                                print(f"開始關卡: {current_level.name}")
+                            else:
+                                print("無法開始: 未選取任何貓咪！")
+                                if key_action_sfx.get('cannot_deploy'):
+                                    key_action_sfx['cannot_deploy'].play()
+                        else:
+                            if key_action_sfx.get('cannot_deploy'):
+                                key_action_sfx['cannot_deploy'].play()
+
+
 
         elif game_state == "playing":
             current_level = levels[selected_level]
@@ -478,7 +536,6 @@ async def main_game_loop(screen, clock):
                         print("恢復戰鬥。")
 
         elif game_state == "end":
-
             current_level = levels[selected_level]
             is_last_level = selected_level == len(levels) - 1
             is_first_completion = selected_level not in completed_levels
@@ -489,7 +546,8 @@ async def main_game_loop(screen, clock):
                 if victory_sfx:
                     victory_sfx.set_volume(0.8)
                     victory_sfx.play(loops=0, maxtime=0)
-                    pygame.time.wait(100)
+                    # 註解掉 pygame.time.wait，因為瀏覽器不支援
+                    # pygame.time.wait(100)
                     busy_channels = sum(pygame.mixer.Channel(i).get_busy() for i in range(pygame.mixer.get_num_channels()))
                     print(f"播放勝利音效，當前使用頻道數: {busy_channels}")
 
@@ -504,6 +562,7 @@ async def main_game_loop(screen, clock):
                     if event.key == pygame.K_RETURN:
                         if status == "victory" and is_first_completion:
                             completed_levels.add(selected_level)
+                            # 臨時禁用儲存
                             try:
                                 with open(save_file, "w") as f:
                                     json.dump(list(completed_levels), f)
@@ -535,6 +594,7 @@ async def main_game_loop(screen, clock):
                     if continue_rect and continue_rect.collidepoint(pos):
                         if status == "victory" and is_first_completion:
                             completed_levels.add(selected_level)
+                            # 臨時禁用儲存
                             try:
                                 with open(save_file, "w") as f:
                                     json.dump(list(completed_levels), f)
@@ -568,10 +628,10 @@ async def main_game_loop(screen, clock):
             ending_duration = 35000
             fade_in_duration = 5000
 
-            # 音樂初始化
+            # 避免重新初始化混音器，註解掉 pygame.mixer.quit()
             if not hasattr(pygame.time, "ending_music_initialized") or not pygame.time.ending_music_initialized:
-                pygame.mixer.quit()
-                pygame.mixer.init()
+                # pygame.mixer.quit()  # 註解掉
+                # pygame.mixer.init()  # 註解掉
                 pygame.mixer.set_num_channels(16)
                 pygame.mixer.music.set_volume(0.5)
                 print(f"重新初始化混音器，頻道數: {pygame.mixer.get_num_channels()}")
@@ -582,7 +642,8 @@ async def main_game_loop(screen, clock):
                     pygame.mixer.music.load(ending_music_path)
                     pygame.mixer.music.set_volume(0.5)
                     pygame.mixer.music.play(-1)
-                    pygame.time.wait(200)  # 確保音樂開始
+                    # 註解掉 pygame.time.wait，因為瀏覽器不支援
+                    # pygame.time.wait(200)  # 確保音樂開始
                     current_bgm_path = ending_music_path
                     pygame.time.ending_music_initialized = True
                     print(f"播放結局音樂: {ending_music_path}, 當前音樂狀態: {pygame.mixer.music.get_busy()}")
@@ -644,10 +705,3 @@ async def main_game_loop(screen, clock):
 
         await asyncio.sleep(0)
         clock.tick(FPS)
-
-
-
-
-
-
-
