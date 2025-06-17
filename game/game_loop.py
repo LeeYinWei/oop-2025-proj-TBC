@@ -326,7 +326,7 @@ async def main_game_loop(screen, clock):
             is_last_level = selected_level == len(levels) - 1
             first_completion = is_last_level and (selected_level not in completed_levels)
             victory_display_time = getattr(pygame.time, "victory_display_time", 0)
-            print(first_completion)
+            # print(first_completion)
             if victory_display_time == 0 and status == "victory":
                 pygame.time.victory_display_time = pygame.time.get_ticks()
                 victory_duration = 3000  # 3 秒顯示 Victory 畫面
