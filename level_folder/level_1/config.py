@@ -17,15 +17,15 @@ level_config = {
         {
             "type": "basic",
             "variant": "version2",
-            "is_boss": False,
+            "is_boss": False, # If this is meant to be a boss, set to True. Let's assume for now it's not.
             "is_limited": True,
             "spawn_count": 2,
             "weight": 0.3,
-            "tower_hp_percent": 100,
+            "tower_hp_percent": 100, # If this variant comes out earlier than a boss, consider its HP % trigger
             "initial_delay": 10000,
             "spawn_interval_1": 2000,
-            "hp_multiplier": 2.5,  # Higher HP for boss variant
-            "atk_multiplier": 2.0  # Higher attack for boss variant
+            "hp_multiplier": 2.5,  # Higher HP for version2
+            "atk_multiplier": 2.0  # Higher attack for version2
         },
         {
             "type": "fast",
@@ -34,22 +34,23 @@ level_config = {
             "is_limited": True,
             "spawn_count": 5,
             "weight": 0.3,
-            "tower_hp_percent": 80,
+            "tower_hp_percent": 80, # This enemy type starts spawning when tower HP is at 80% or below
             "initial_delay": 7000,
             "spawn_interval_1": 2000,
-            "hp_multiplier": 1,  # Lower HP for fast variant
-            "atk_multiplier": 1  # Slightly higher attack for fast variant
+            "hp_multiplier": 1,
+            "atk_multiplier": 1
         }
     ],
     "spawn_interval": 3000,
-    "survival_time": 60,
-    "background_path": "background/background3.png",
+    "survival_time": 60, # Survival time in seconds. Assuming this is milliseconds in your game logic?
+                        # If it's 60 seconds, ensure your game loop converts it to milliseconds for comparisons.
+    "background_path": "background/background3.png", # Corrected path if "background/" means base game folder
     "our_tower": {
         "y": 140,
         "width": 350,
         "height": 350,
         "hp": 600,
-        "tower_path": "tower/our_tower.png",
+        "tower_path": "tower/our_tower.png", # Corrected path
         "color": (100, 100, 255)
     },
     "enemy_tower": {
@@ -57,7 +58,11 @@ level_config = {
         "width": 350,
         "height": 350,
         "hp": 600,
-        "tower_path": "tower/enemy_tower.png"
+        "tower_path": "tower/enemy_tower.png" # Corrected path
     },
-    "tower_distance": 800
+    "tower_distance": 800,
+    "initial_budget": 1000, # <--- ADD THIS LINE with a starting budget for this level
+    "music_path": "audio/TBC/117.ogg", # <--- ADD THIS LINE with the path to the level's background music
+    "switch_music_on_boss": True, # <--- ADD THIS LINE (set to True if you want music to change when a boss appears)
+    "boss_music_path": "audio/TBC/118.ogg" # <--- ADD THIS LINE (path to boss music, only relevant if switch_music_on_boss is True)
 }

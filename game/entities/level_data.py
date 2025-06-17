@@ -23,6 +23,7 @@ if os.path.exists(level_folder):
             try:
                 config = load_config(level_folder, level_subfolder)
                 level_index = extract_level_number(level_subfolder) - 1  # Convert to 0-based index
+
                 levels.append(Level(
                     config["name"],
                     config["enemy_types"],
@@ -31,10 +32,16 @@ if os.path.exists(level_folder):
                     config["background_path"],
                     config["our_tower"],
                     config["enemy_tower"],
-                    config["tower_distance"]
+                    config["tower_distance"],
+                    # --- ADD THESE NEW ARGUMENTS ---
+                    config["initial_budget"],
+                    config.get("music_path", "audio/default_battle_music.ogg"), # Use .get() with default for optional keys
+                    config.get("switch_music_on_boss", False),
+                    config.get("boss_music_path", "audio/boss_music.ogg")
                 ))
                 print(f"Loaded level: {config['name']} at index {level_index}")
             except KeyError as e:
+                # This error means a critical key like 'initial_budget' is missing in config.json
                 print(f"Missing required config key '{e}' for level '{level_subfolder}', skipping this level")
             except Exception as e:
                 print(f"Error loading level config for '{level_subfolder}': {e}, skipping this level")
