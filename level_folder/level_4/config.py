@@ -58,5 +58,5 @@ level_config = {
         "hp": 6000,
         "tower_path": "tower/enemy_tower.png"
     },
-    "tower_distance": 1000
+    "tower_distance": 900
 }
