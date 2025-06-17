@@ -3,10 +3,8 @@ import os
 import asyncio
 import pygame
 
-from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect, load_cat_images
 
-from .battle_logic import update_battle
-from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
+
 
 # --- Pygame 混音器初始化 ---
 pygame.mixer.init()
@@ -111,6 +109,11 @@ async def main_game_loop(screen, clock):
     font = pygame.font.SysFont(None, 24)
     end_font = pygame.font.SysFont(None, 96)
     game_state = "intro" # 遊戲初始狀態
+    from .battle_logic import update_battle
+    from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
+
+    #from .load_images import *
+    from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect, load_cat_images
 
     # 遊戲狀態變數初始化
     selected_level = 0
@@ -153,8 +156,10 @@ async def main_game_loop(screen, clock):
     cat_key_map = {pygame.K_1 + i: cat_type for i, cat_type in enumerate(selected_cats[:10])}
     button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
 
+    #load all images
+    cat_images = load_cat_images()  # 載入貓咪圖片
+    from game.constants import csmoke_images1, csmoke_images2
 
-    cat_images = load_cat_images()
     # Intro animation variables
 
     intro_start_time = pygame.time.get_ticks()
@@ -222,7 +227,7 @@ async def main_game_loop(screen, clock):
             boss_shockwave_played_for_this_boss = False # 重設震波音效旗標
 
 
-            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
+            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images)
             pygame.display.flip()
 
             for event in pygame.event.get():
@@ -274,13 +279,13 @@ async def main_game_loop(screen, clock):
                                 enemy_tower = current_level.enemy_tower
                                 
                                 # 塔生成煙霧效果 (我方塔)
-                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 - 30, our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 + 30, 1000))
-                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 10, our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 20, 1000))
-                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2 + 40, our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2, 1000))
+                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 - 30, our_tower.x + our_tower.width // 2, our_tower.y + our_tower.height // 2 + 30,csmoke_images1, csmoke_images2, 1000))
+                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 10, our_tower.x + our_tower.width // 3, our_tower.y + our_tower.height // 2 + 20,csmoke_images1, csmoke_images2, 1000))
+                                our_tower.csmoke_effects.append(CSmokeEffect(our_tower.x + our_tower.width // 4, our_tower.y + our_tower.height // 2 + 40, our_tower.x + our_tower.width // 5, our_tower.y + our_tower.height // 2,csmoke_images1, csmoke_images2, 1000))
                                 # 塔生成煙霧效果 (敵方塔)
-                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2 - 20, enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3 + 20, 1000))
-                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2 + 30, enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2, 1000))
-                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2 + 50, enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2 + 60, 1000))
+                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 2 - 20, enemy_tower.x + enemy_tower.width // 2, enemy_tower.y + enemy_tower.height // 3 + 20,csmoke_images1, csmoke_images2, 1000))
+                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2 + 30, enemy_tower.x + enemy_tower.width // 3, enemy_tower.y + enemy_tower.height // 2,csmoke_images1, csmoke_images2, 1000))
+                                enemy_tower.csmoke_effects.append(CSmokeEffect(enemy_tower.x + enemy_tower.width // 4, enemy_tower.y + enemy_tower.height // 2 + 50, enemy_tower.x + enemy_tower.width // 5, enemy_tower.y + enemy_tower.height // 2 + 60,csmoke_images1, csmoke_images2, 1000))
 
                                 # 重設遊戲狀態變數
                                 current_level.reset_spawn_counts()

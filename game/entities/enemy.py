@@ -15,6 +15,7 @@ from game.entities.smokeeffect import SmokeEffect
 from game.entities.shockwaveeffect import ShockwaveEffect
 from game.entities.physiceffect import PhysicEffect
 from game.entities.soul import Soul
+from game.constants import smoke_images, electric_images, gas_images, physic_images
 
 class Enemy:
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
@@ -122,7 +123,7 @@ class Enemy:
                 for _ in range(random.randint(3, 5)):
                     smoke_x = center_x + random.randint(-5, 5)  # 小範圍隨機偏移
                     smoke_y = center_y + random.randint(-5, 5)  # 小範圍隨機偏移
-                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y))
+                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y, smoke_images))
             elif attack_type == "physic":
                 # 被攻擊時生成物理特效，3-5 個粒子，位置在角色中心
                 center_x = self.x + self.width // 2
@@ -130,7 +131,7 @@ class Enemy:
                 for _ in range(random.randint(3, 5)):
                     physic_x = center_x + random.randint(-5, 5)
                     physic_y = center_y + random.randint(-5, 5)
-                    self.physic_effects.append(PhysicEffect(physic_x, physic_y))
+                    self.physic_effects.append(PhysicEffect(physic_x, physic_y, physic_images))
             elif attack_type == "electric": 
                 # 被攻擊時生成電擊特效，3-5 個粒子，位置在角色中心
                 center_x = self.x + self.width // 2
@@ -138,7 +139,7 @@ class Enemy:
                 for _ in range(random.randint(3, 5)):
                     electric_x = center_x + random.randint(-5, 5)
                     electric_y = center_y + random.randint(-5, 5)
-                    self.electric_effects.append(ElectricEffect(electric_x, electric_y))
+                    self.electric_effects.append(ElectricEffect(electric_x, electric_y, electric_images))
             elif attack_type == "gas":
                 # 被攻擊時生成氣體特效，3-5 個粒子，位置在角色中心
                 center_x = self.x + self.width // 2
@@ -146,7 +147,7 @@ class Enemy:
                 for _ in range(random.randint(3, 5)):
                     gas_x = center_x + random.randint(-5, 5)
                     gas_y = center_y + random.randint(-5, 5)
-                    self.gas_effects.append(GasEffect(gas_x, gas_y))
+                    self.gas_effects.append(GasEffect(gas_x, gas_y, gas_images))
         thresholds_crossed = int(self.last_hp / self.kb_threshold) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
             self.knock_back()
