@@ -55,9 +55,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         cat_center_x = cat.x + cat.width // 2
         cat_attack_zone = pygame.Rect(
             cat_center_x - cat.attack_range // 2,
-            cat.y - cat.height // 2,  # 假設 y 範圍從中心向上向下擴展
+            cat.y - cat.height // 2,  # 從中心向上向下擴展
             cat.attack_range,
-            cat.height + cat.attack_range  # 調整高度以涵蓋攻擊範圍
+            cat.height + cat.attack_range  # 涵蓋高度和攻擊範圍
         )
         if cat.anim_state in ["windup", "attacking", "recovery"]:
             if not cat.done_attack:
@@ -77,7 +77,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 if thresholds_crossed > 0:
                                     enemy.knock_back()
                             enemy.last_hp = enemy.hp
-                            contact_rect = cat_attack_zone.clip(enemy.get_rect())
+                            contact_rect = cat_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             enemy.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
@@ -87,7 +87,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.take_damage(cat.atk, cat.attack_type)
-                            contact_rect = cat_attack_zone.clip(tower.get_rect())
+                            contact_rect = cat_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
@@ -167,9 +167,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
         enemy_center_x = enemy.x + enemy.width // 2
         enemy_attack_zone = pygame.Rect(
             enemy_center_x - enemy.attack_range // 2,
-            enemy.y - enemy.height // 2,  # 假設 y 範圍從中心向上向下擴展
+            enemy.y - enemy.height // 2,  # 從中心向上向下擴展
             enemy.attack_range,
-            enemy.height + enemy.attack_range  # 調整高度以涵蓋攻擊範圍
+            enemy.height + enemy.attack_range  # 涵蓋高度和攻擊範圍
         )
         if enemy.anim_state in ["windup", "attacking", "recovery"]:
             if not enemy.done_attack:
@@ -189,7 +189,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 if thresholds_crossed > 0:
                                     c.knock_back()
                             c.last_hp = c.hp
-                            contact_rect = enemy_attack_zone.clip(c.get_rect())
+                            contact_rect = enemy_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             c.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
@@ -199,7 +199,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.take_damage(enemy.atk, enemy.attack_type)
-                            contact_rect = enemy_attack_zone.clip(tower.get_rect())
+                            contact_rect = enemy_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
