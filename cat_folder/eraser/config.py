@@ -3,7 +3,7 @@ cat_config = {
     "atk": 10,
     "speed": 4,
     "color": (0, 255, 255),
-    "attack_range": 200,
+    "attack_range": 170,
     "is_aoe": True,
     "kb_limit": 3,
     "cooldown": 1000,

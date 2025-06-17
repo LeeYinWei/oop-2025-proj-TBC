@@ -4,7 +4,7 @@ enemy_config = {
     "atk": 8,
     "speed": 4,
     "color": (0, 255, 0),
-    "attack_range": 40,
+    "attack_range": 25,
     "is_aoe": False,
     "kb_limit": 7,
     "width": 200,

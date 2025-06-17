@@ -4,7 +4,7 @@ import sys, os
 import random
 
 class ShockwaveEffect:
-    def __init__(self, x, y, duration=5000, scale=1.0):
+    def __init__(self, x, y, duration=4000, scale=1.0):
         self.x = x
         self.y = y
         self.start_time = pygame.time.get_ticks()
