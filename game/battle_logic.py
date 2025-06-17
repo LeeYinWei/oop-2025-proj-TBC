@@ -44,18 +44,25 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
     for enemy in enemies:
         if enemy.is_boss and not getattr(enemy, 'has_spawn_shockwave', False):
             shockwave_x = enemy.x + enemy.width // 2
-            shockwave_y = enemy.y + enemy.height // 2-150
+            shockwave_y = enemy.y + enemy.height // 2 - 150
             shockwave = ShockwaveEffect(shockwave_x, shockwave_y, duration=1000, scale=1.0)
             shockwave_effects.append(shockwave)
             enemy.has_spawn_shockwave = True  # 標記已觸發，避免重複
-            #print(f"Boss {enemy} spawned with shockwave at ({shockwave_x}, {shockwave_y})")
+            # print(f"Boss {enemy} spawned with shockwave at ({shockwave_x}, {shockwave_y})")
 
     for cat in cats:
-        cat_attack_zone = cat.get_attack_zone()
+        # 重新定義攻擊範圍，以角色中心 x 點為基準
+        cat_center_x = cat.x + cat.width // 2
+        cat_attack_zone = pygame.Rect(
+            cat_center_x - cat.attack_range // 2,
+            cat.y - cat.height // 2,  # 從中心向上向下擴展
+            cat.attack_range,
+            cat.height + cat.attack_range  # 涵蓋高度和攻擊範圍
+        )
         if cat.anim_state in ["windup", "attacking", "recovery"]:
             if not cat.done_attack:
                 cat.done_attack = True
-                #print(f"Cat attacking, anim_state: {cat.anim_state}, zone: {cat_attack_zone}")
+                # print(f"Cat attacking, anim_state: {cat.anim_state}, zone: {cat_attack_zone}")
                 if cat.is_aoe:
                     targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
                     if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
@@ -70,18 +77,17 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 if thresholds_crossed > 0:
                                     enemy.knock_back()
                             enemy.last_hp = enemy.hp
-                            contact_rect = cat_attack_zone.clip(enemy.get_rect())
+                            contact_rect = cat_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             enemy.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
                             # 播放攻擊到敵方角色音效 (021.ogg)
                             if battle_sfx.get('hit_unit'):
                                 battle_sfx['hit_unit'].play()
-                            
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.take_damage(cat.atk, cat.attack_type)
-                            contact_rect = cat_attack_zone.clip(tower.get_rect())
+                            contact_rect = cat_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             cat.contact_points.append(contact_point)
@@ -116,8 +122,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 # 播放攻擊到敵方角色音效 (021.ogg)
                                 if battle_sfx.get('hit_unit'):
                                     battle_sfx['hit_unit'].play()
-                                break # 非AOE攻擊，命中一個敵人就停止
-                                
+                                break  # 非AOE攻擊，命中一個敵人就停止
         elif cat.is_aoe:
             targets = [e for e in enemies if cat_attack_zone.colliderect(e.get_rect())]
             if enemy_tower and cat_attack_zone.colliderect(enemy_tower.get_rect()):
@@ -158,11 +163,18 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                 cat.move()
 
     for enemy in enemies:
-        enemy_attack_zone = enemy.get_attack_zone()
+        # 重新定義攻擊範圍，以角色中心 x 點為基準
+        enemy_center_x = enemy.x + enemy.width // 2
+        enemy_attack_zone = pygame.Rect(
+            enemy_center_x - enemy.attack_range // 2,
+            enemy.y - enemy.height // 2,  # 從中心向上向下擴展
+            enemy.attack_range,
+            enemy.height + enemy.attack_range  # 涵蓋高度和攻擊範圍
+        )
         if enemy.anim_state in ["windup", "attacking", "recovery"]:
             if not enemy.done_attack:
                 enemy.done_attack = True
-                #print(f"Enemy attacking, anim_state: {enemy.anim_state}, zone: {enemy_attack_zone}")
+                # print(f"Enemy attacking, anim_state: {enemy.anim_state}, zone: {enemy_attack_zone}")
                 if enemy.is_aoe:
                     targets = [c for c in cats if enemy_attack_zone.colliderect(c.get_rect())]
                     if enemy_attack_zone.colliderect(our_tower.get_rect()):
@@ -177,7 +189,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 if thresholds_crossed > 0:
                                     c.knock_back()
                             c.last_hp = c.hp
-                            contact_rect = enemy_attack_zone.clip(c.get_rect())
+                            contact_rect = enemy_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             c.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
@@ -187,7 +199,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                         elif isinstance(tar, Tower):
                             tower = tar
                             tower.take_damage(enemy.atk, enemy.attack_type)
-                            contact_rect = enemy_attack_zone.clip(tower.get_rect())
+                            contact_rect = enemy_attack_zone.clip(tar.get_rect())
                             contact_point = contact_rect.center
                             tower.contact_points.append(contact_point)
                             enemy.contact_points.append(contact_point)
@@ -282,11 +294,11 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
             souls.append(Soul(enemy.x + enemy.width // 2, enemy.y))
             enemy_y_manager.release_y(enemy.slot_index)
             # 將敵人的獎勵加到 current_budget 中
-            current_budget = current_budget + enemy.reward
+            current_budget += enemy.reward
             # 播放敵人死亡音效 (023.ogg)
             if battle_sfx.get('unit_die'):
                 battle_sfx['unit_die'].play()
-            #print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
+            # print(f"Enemy defeated! Gained {enemy.reward} budget. Current budget: {current_budget}") # 可選：打印日誌
     enemies[:] = new_enemies
 
     # 中央處理貓咪死亡
