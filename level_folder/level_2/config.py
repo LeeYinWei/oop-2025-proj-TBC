@@ -10,7 +10,7 @@ level_config = {
             "weight": 0.5,
             "tower_hp_percent": 100,
             "initial_delay": 3000,
-            "spawn_interval_1": 2500
+            "spawn_interval_1": 5000
         },
         {
             "type": "fast",
@@ -21,7 +21,7 @@ level_config = {
             "weight": 0.3,
             "tower_hp_percent": 90,
             "initial_delay": 5000,
-            "spawn_interval_1": 2000
+            "spawn_interval_1": 10000
         },
         {
             "type": "tank",
