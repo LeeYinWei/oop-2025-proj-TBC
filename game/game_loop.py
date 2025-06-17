@@ -3,7 +3,7 @@ import os
 import asyncio
 import pygame
 
-
+delayTime = 2000
 
 
 # --- Pygame 混音器初始化 ---
@@ -210,7 +210,7 @@ async def main_game_loop(screen, clock):
                         if key_action_sfx.get('other_button'): key_action_sfx['other_button'].play()
                         print("已跳過開場動畫。")
 
-            if elapsed_intro_time >= intro_duration:
+            if elapsed_intro_time >= intro_duration + delayTime:
                 game_state = "level_selection"
                 pygame.mixer.music.stop()
                 current_bgm_path = None
@@ -608,7 +608,7 @@ async def main_game_loop(screen, clock):
                         setattr(pygame.time, "ending_start_time", 0) # 重設結束動畫開始時間
                         print("已跳過結局動畫。")
             
-            if elapsed_time >= ending_duration:
+            if elapsed_time >= ending_duration + delayTime:
                 game_state = "level_selection"
                 pygame.mixer.music.stop()
                 current_bgm_path = None
