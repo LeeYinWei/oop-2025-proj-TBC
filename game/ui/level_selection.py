@@ -23,7 +23,7 @@ def load_level_selection_background_image(screen_width, screen_height):
             _level_selection_background_image = None
     return _level_selection_background_image
 
-def draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels):
+def draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images):
     background_image = load_level_selection_background_image(screen.get_width(), screen.get_height())
     if background_image:
         screen.blit(background_image, (0, 0))
@@ -43,10 +43,16 @@ def draw_level_selection(screen, levels, selected_level, selected_cats, font, co
         screen.blit(level_text, (rect.x + 5, rect.y + 15))
 
     for idx, cat_type in enumerate(cat_types.keys()):
-        rect = pygame.Rect(300 + (idx % 5) * 120, 100 + (idx // 5) * 60, 100, 50)
+        rect = pygame.Rect(270 + (idx % 5) * 200, 100 + (idx // 5) * 60, 180, 50)
         cat_rects[cat_type] = rect
         color = (0, 255, 0) if cat_type in selected_cats else (200, 200, 200)
         pygame.draw.rect(screen, color, rect)
+        # 畫圖片（下方居中）
+        if cat_type in cat_images:
+            cat_img = cat_images[cat_type]
+            img_x = rect.x + (rect.width - cat_img.get_width()) // 2
+            img_y = rect.y + 60
+            screen.blit(cat_img, (img_x, img_y))
         screen.blit(font.render(cat_type, True, (255, 255, 255)), (rect.x + 5, rect.y + 15))
         cost = cat_costs.get(cat_type, 0)
         cost_text = font.render(f"Cost: {cost}", True, (255, 255, 255))

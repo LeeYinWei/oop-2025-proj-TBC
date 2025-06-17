@@ -2,7 +2,7 @@ import json
 import os
 import asyncio
 import pygame
-from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect
+from .entities import cat_types, cat_costs, cat_cooldowns, levels, enemy_types, YManager,CSmokeEffect, load_cat_images
 from .battle_logic import update_battle
 from .ui import draw_level_selection, draw_game_ui, draw_pause_menu, draw_end_screen, draw_intro_screen, draw_ending_animation
 
@@ -47,6 +47,7 @@ async def main_game_loop(screen, clock):
     cat_key_map = {pygame.K_1 + i: cat_type for i, cat_type in enumerate(selected_cats[:10])}
     button_rects = {cat_type: pygame.Rect(1100 + idx * 120, 50, 100, 50) for idx, cat_type in enumerate(selected_cats)}
 
+    cat_images = load_cat_images()
     # Intro animation variables
     intro_start_time = pygame.time.get_ticks()
     intro_duration = 35000  # 35 seconds total duration
@@ -94,7 +95,7 @@ async def main_game_loop(screen, clock):
                 print("Intro animation completed")
 
         elif game_state == "level_selection":
-            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels)
+            cat_rects, reset_rect, quit_rect = draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels, cat_images)
             pygame.display.flip()
 
             for event in pygame.event.get():

@@ -29,4 +29,5 @@ cat_config = {
     "ibtn_hover": "ccat_folder/speedy/ibtn_hover.png",
     "ibtn_pressed": "cat_folder/speedy/ibtn_pressed.png",
     "attack_type": "electric",  # 攻擊類型
+    "cat_image": "cat_folder/speedy/cat_image.png",  # 放在levelselection的貓咪圖片
 }
