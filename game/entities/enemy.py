@@ -3,7 +3,6 @@ from game.entities.shockwaveeffect import ShockwaveEffect
 from game.entities.soul import Soul
 import pygame
 
-
 class Enemy(Common):
     def __init__(self, x, y, hp, speed, color, attack_range=50, is_aoe=False, is_boss=False,
                  is_b=False, atk=10, kb_limit=1, width=50, height=50, idle_frames=None,

@@ -1,4 +1,5 @@
 import pygame
+import math
 import random
 from abc import ABC, abstractmethod
 
@@ -14,10 +15,10 @@ class Common(ABC):
                  width=50, height=50, kb_limit=1, idle_frames=None, move_frames=None,
                  windup_frames=None, attack_frames=None, recovery_frames=None,
                  kb_frames=None, windup_duration=200, attack_duration=100, recovery_duration=50,
-                 attack_interval=1000, attack_type="gun", attack_phases=None):
+                 attack_interval=1000, attack_type="gun"):
         self.x = x
-        self.y = y - height
-        self.y0 = y - height
+        self.y = y - height  # 預設底部對齊
+        self.y0 = y - height  # 原始 y 座標
         self.hp = hp
         self.max_hp = hp
         self.atk = atk
@@ -33,13 +34,10 @@ class Common(ABC):
         self.last_hp = hp
         self.last_attack_time = 0
         self.is_attacking = False
-        self.contact_points = []  # 實際接觸點
+        self.contact_points = []
         self.anim_state = "idle"
         self.anim_progress = 0
-        self.anim_frame = 0
         self.anim_start_time = 0
-        self.current_phase = 0  # 當前攻擊階段
-        self.phase_start_time = 0
         self.anim_frames = {
             "idle": [], "moving": [], "windup": [], "attacking": [], "recovery": [], "knockback": []
         }
@@ -72,34 +70,35 @@ class Common(ABC):
         self.kb_target_x = 0
         self.kb_start_y = self.y
         self.kb_progress = 0
-        self.kb_duration = 300
+        self.kb_duration = 300  # 預設擊退時間
         self.kb_start_time = 0
         self.kb_rotation = 0
         self.status_effects = {}
         self.status_effects_config = {}
         self.attack_interval = attack_interval
-        self.smoke_effects = []
-        self.physic_effects = []
-        self.electric_effects = []
-        self.gas_effects = []
+        self.smoke_effects = []  # 儲存煙霧特效實例
+        self.physic_effects = []  # 儲存物理特效實例
+        self.electric_effects = []  # 儲存電擊特效實例
+        self.gas_effects = []  # 儲存氣體特效實例
         self.done_attack = False
-        self.slot_index = None
-        self.attack_type = attack_type
-        self.attack_phases = attack_phases or [{"range": attack_range, "duration": attack_duration}]  # 預設單段
+        self.slot_index = None  # 儲存使用的 y_slot 索引
+        self.attack_type = attack_type  # 攻擊類型
 
     @abstractmethod
     def move(self):
+        """抽象方法，子類必須實現移動邏輯"""
         pass
 
     @abstractmethod
     def get_attack_zone(self):
+        """抽象方法，子類必須實現攻擊區域計算"""
         pass
 
-    def knock_back(self, direction=-50):
+    def knock_back(self, direction=-50):  # 預設向左擊退，子類可覆蓋
         if not hasattr(self, 'immunities') or "Knockback Immunity" not in self.immunities.get("self", []):
             self.kb_animation = True
             self.kb_start_x = self.x
-            self.kb_target_x = self.x + direction
+            self.kb_target_x = self.x + direction  # 方向可由子類指定
             self.kb_start_y = self.y
             self.kb_start_time = pygame.time.get_ticks()
             self.kb_progress = 0
@@ -109,26 +108,31 @@ class Common(ABC):
                 self.hp = 0
 
     def take_damage(self, damage, attack_type):
+        """處理受到傷害的邏輯，並根據攻擊類型生成特效"""
         self.hp -= damage
         if self.hp > 0:
             center_x = self.x + self.width // 2
             center_y = self.y + self.height // 2
             if attack_type == "gun":
                 for _ in range(random.randint(3, 5)):
-                    self.smoke_effects.append(SmokeEffect(center_x + random.randint(-5, 5),
-                                                         center_y + random.randint(-5, 5), smoke_images))
+                    smoke_x = center_x + random.randint(-5, 5)
+                    smoke_y = center_y + random.randint(-5, 5)
+                    self.smoke_effects.append(SmokeEffect(smoke_x, smoke_y, smoke_images))
             elif attack_type == "physic":
                 for _ in range(random.randint(3, 5)):
-                    self.physic_effects.append(PhysicEffect(center_x + random.randint(-5, 5),
-                                                           center_y + random.randint(-5, 5), physic_images))
+                    physic_x = center_x + random.randint(-5, 5)
+                    physic_y = center_y + random.randint(-5, 5)
+                    self.physic_effects.append(PhysicEffect(physic_x, physic_y, physic_images))
             elif attack_type == "electric":
                 for _ in range(random.randint(3, 5)):
-                    self.electric_effects.append(ElectricEffect(center_x + random.randint(-5, 5),
-                                                               center_y + random.randint(-5, 5), electric_images))
+                    electric_x = center_x + random.randint(-5, 5)
+                    electric_y = center_y + random.randint(-5, 5)
+                    self.electric_effects.append(ElectricEffect(electric_x, electric_y, electric_images))
             elif attack_type == "gas":
                 for _ in range(random.randint(3, 5)):
-                    self.gas_effects.append(GasEffect(center_x + random.randint(-5, 5),
-                                                     center_y + random.randint(-5, 5), gas_images))
+                    gas_x = center_x + random.randint(-5, 5)
+                    gas_y = center_y + random.randint(-5, 5)
+                    self.gas_effects.append(GasEffect(gas_x, gas_y, gas_images))
         thresholds_crossed = min(self.max_hp // self.kb_threshold - 1, int(self.last_hp / self.kb_threshold)) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
             self.knock_back()
@@ -139,7 +143,7 @@ class Common(ABC):
         if self.kb_animation:
             elapsed = current_time - self.kb_start_time
             self.kb_progress = min(elapsed / self.kb_duration, 1.0)
-            eased_progress = 1 - (1 - self.kb_progress) ** 2
+            eased_progress = 1 - (1 - self.kb_progress) ** 2  # 緩慢開始，快速結束
             self.x = self.kb_start_x + (self.kb_target_x - self.kb_start_x) * eased_progress
             self.y = self.kb_start_y
             if self.kb_progress < 0.5:
@@ -151,35 +155,34 @@ class Common(ABC):
                 self.anim_state = "idle"
                 self.is_attacking = False
                 self.done_attack = False
-                self.y = self.y0
+                self.y = self.y0  # 恢復到原始 y 座標
                 self.kb_rotation = 0
-        elif self.is_attacking and self.anim_state in ["windup", "attacking", "recovery"]:
-            elapsed = current_time - self.phase_start_time
-            total_duration = sum(phase["duration"] for phase in self.attack_phases)
-            if elapsed >= total_duration + self.frame_durations["recovery"] * len(self.anim_frames["recovery"]):
-                self.anim_state = "idle"
-                self.is_attacking = False
-                self.done_attack = False
-                self.current_phase = 0
-            elif self.anim_state == "windup":
-                if elapsed >= self.frame_durations["windup"] * len(self.anim_frames["windup"]):
-                    self.anim_state = "attacking"
-                    self.phase_start_time = current_time
-            elif self.anim_state == "attacking":
-                phase_duration = self.attack_phases[self.current_phase]["duration"]
-                if elapsed - self.phase_start_time >= phase_duration:
-                    self.current_phase += 1
-                    if self.current_phase >= len(self.attack_phases):
+        else:
+            if self.anim_state in ["windup", "attacking", "recovery"]:
+                elapsed = current_time - self.anim_start_time
+                state_duration = (
+                    self.frame_durations["windup"] * len(self.anim_frames["windup"]) if self.anim_state == "windup" else
+                    self.frame_durations["attacking"] * len(self.anim_frames["attacking"]) if self.anim_state == "attacking" else
+                    self.frame_durations["recovery"] * len(self.anim_frames["recovery"])
+                )
+                if elapsed >= state_duration:
+                    if self.anim_state == "windup":
+                        self.anim_state = "attacking"
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "attacking":
                         self.anim_state = "recovery"
-                        self.phase_start_time = current_time
-                    else:
-                        self.phase_start_time = current_time
-            self.anim_progress = min(elapsed / total_duration, 1.0) if total_duration > 0 else 0
-        elif not self.is_attacking and self.anim_state != "moving":
-            self.anim_state = "idle"
-            self.anim_progress = (current_time / self.frame_durations["idle"]) % 1
-        elif self.anim_state == "moving":
-            self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
+                        self.anim_start_time = current_time
+                    elif self.anim_state == "recovery":
+                        self.anim_state = "idle"
+                        self.anim_start_time = current_time
+                        self.is_attacking = False
+                        self.done_attack = False
+                self.anim_progress = min(elapsed / state_duration, 1.0) if state_duration > 0 else 0
+            elif not self.is_attacking and self.anim_state != "moving":
+                self.anim_state = "idle"
+                self.anim_progress = (current_time / self.frame_durations["idle"]) % 1
+            elif self.anim_state == "moving":
+                self.anim_progress = (current_time / self.frame_durations["moving"]) % 1
 
     def update_smoke_effects(self):
         self.smoke_effects = [smoke for smoke in self.smoke_effects if smoke.update()]
@@ -233,6 +236,7 @@ class Common(ABC):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
     def update_status_effects(self, current_time):
+        """更新狀態效果"""
         to_remove = []
         for effect, end_time in self.status_effects.items():
             if current_time >= end_time:
@@ -252,7 +256,3 @@ class Common(ABC):
                 self.speed /= 0.5
             elif effect == "Weaken":
                 self.atk /= 0.7
-
-
-
-                
