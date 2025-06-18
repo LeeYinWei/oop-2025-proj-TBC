@@ -75,7 +75,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             if enemy.hp > 0:
                                 thresholds_crossed = min(int(old_hp / enemy.kb_threshold), int(enemy.max_hp / enemy.kb_threshold) - 1) - int(enemy.hp / enemy.kb_threshold)
                                 
-                                print()
+                                print("enemy", old_hp// enemy.kb_threshold,  enemy.max_hp // enemy.kb_threshold, enemy.hp //enemy.kb_threshold, thresholds_crossed)
                                 
                                 if thresholds_crossed > 0:
                                     enemy.knock_back()
@@ -115,6 +115,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 enemy.take_damage(cat.atk, cat.attack_type)
                                 if enemy.hp > 0:
                                     thresholds_crossed = min(int(old_hp / enemy.kb_threshold), int(enemy.max_hp / enemy.kb_threshold) - 1)  - int(enemy.hp / enemy.kb_threshold)
+                                    print("enemy", old_hp// enemy.kb_threshold,  enemy.max_hp // enemy.kb_threshold, enemy.hp //enemy.kb_threshold, thresholds_crossed)
                                     if thresholds_crossed > 0:
                                         enemy.knock_back()
                                 enemy.last_hp = enemy.hp
@@ -189,6 +190,9 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             c.take_damage(enemy.atk, enemy.attack_type)
                             if c.hp > 0:
                                 thresholds_crossed = min(int(old_hp / cat.kb_threshold), int(cat.max_hp / cat.kb_threshold) - 1) - int(c.hp / cat.kb_threshold)
+                                
+                                print("cat", old_hp// cat.kb_threshold,  cat.max_hp // cat.kb_threshold, cat.hp //cat.kb_threshold, thresholds_crossed)
+                                
                                 if thresholds_crossed > 0:
                                     c.knock_back()
                             c.last_hp = c.hp
@@ -227,6 +231,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 cat.take_damage(enemy.atk, enemy.attack_type)
                                 if cat.hp > 0:
                                     thresholds_crossed = min(int(old_hp / cat.kb_threshold), int(cat.max_hp / cat.kb_threshold)- 1) - int(cat.hp / cat.kb_threshold)
+                                    print("cat", old_hp// cat.kb_threshold,  cat.max_hp // cat.kb_threshold, cat.hp //cat.kb_threshold, thresholds_crossed)
                                     if thresholds_crossed > 0:
                                         cat.knock_back()
                                 cat.last_hp = cat.hp
