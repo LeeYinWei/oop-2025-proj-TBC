@@ -148,8 +148,9 @@ class Enemy:
                     gas_x = center_x + random.randint(-5, 5)
                     gas_y = center_y + random.randint(-5, 5)
                     self.gas_effects.append(GasEffect(gas_x, gas_y, gas_images))
-        thresholds_crossed = min(self.max_hp // self.kb_threshold, int(self.last_hp / self.kb_threshold)) - int(self.hp / self.kb_threshold)
+        thresholds_crossed = min(self.max_hp // self.kb_threshold - 1, int(self.last_hp / self.kb_threshold)) - int(self.hp / self.kb_threshold)
         if thresholds_crossed > 0:
+            print(f"Enemy crossed {thresholds_crossed} knockback thresholds.")
             self.knock_back()
         self.last_hp = self.hp
         #print(f"(In take_damage)Enemy took damage: {damage}, remaining HP: {self.hp}")
