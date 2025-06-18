@@ -78,6 +78,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                 print("enemy", old_hp// enemy.kb_threshold,  enemy.max_hp // enemy.kb_threshold, enemy.hp //enemy.kb_threshold, thresholds_crossed)
                                 
                                 if thresholds_crossed > 0:
+                                    print("enemy knock back")
                                     enemy.knock_back()
                             enemy.last_hp = enemy.hp
                             contact_rect = cat_attack_zone.clip(tar.get_rect())
@@ -117,6 +118,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                     thresholds_crossed = min(int(old_hp / enemy.kb_threshold), int(enemy.max_hp / enemy.kb_threshold) - 1)  - int(enemy.hp / enemy.kb_threshold)
                                     print("enemy", old_hp// enemy.kb_threshold,  enemy.max_hp // enemy.kb_threshold, enemy.hp //enemy.kb_threshold, thresholds_crossed)
                                     if thresholds_crossed > 0:
+                                        print("enemy knock back")
                                         enemy.knock_back()
                                 enemy.last_hp = enemy.hp
                                 contact_rect = cat_attack_zone.clip(enemy.get_rect())
@@ -189,11 +191,12 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                             old_hp = c.hp
                             c.take_damage(enemy.atk, enemy.attack_type)
                             if c.hp > 0:
-                                thresholds_crossed = min(int(old_hp / cat.kb_threshold), int(cat.max_hp / cat.kb_threshold) - 1) - int(c.hp / cat.kb_threshold)
+                                thresholds_crossed = min(int(old_hp / c.kb_threshold), int(c.max_hp / c.kb_threshold) - 1) - int(c.hp / c.kb_threshold)
                                 
-                                print("cat", old_hp// cat.kb_threshold,  cat.max_hp // cat.kb_threshold, cat.hp //cat.kb_threshold, thresholds_crossed)
+                                print("cataoe", old_hp// c.kb_threshold,  c.max_hp // c.kb_threshold, c.hp //c.kb_threshold, thresholds_crossed)
                                 
                                 if thresholds_crossed > 0:
+                                    print("cat knock back")
                                     c.knock_back()
                             c.last_hp = c.hp
                             contact_rect = enemy_attack_zone.clip(tar.get_rect())
@@ -233,6 +236,7 @@ def update_battle(cats, enemies, our_tower, enemy_tower, now, souls, cat_y_manag
                                     thresholds_crossed = min(int(old_hp / cat.kb_threshold), int(cat.max_hp / cat.kb_threshold)- 1) - int(cat.hp / cat.kb_threshold)
                                     print("cat", old_hp// cat.kb_threshold,  cat.max_hp // cat.kb_threshold, cat.hp //cat.kb_threshold, thresholds_crossed)
                                     if thresholds_crossed > 0:
+                                        print("cat knock back")
                                         cat.knock_back()
                                 cat.last_hp = cat.hp
                                 contact_rect = enemy_attack_zone.clip(cat.get_rect())
