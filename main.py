@@ -5,6 +5,7 @@ from game.game_loop import main_game_loop
 
 async def main():
     pygame.init()
+    pygame.display.set_caption("The snail adventure")
     screen = pygame.display.set_mode((1280, 600))
     clock = pygame.time.Clock()
     await main_game_loop(screen, clock)

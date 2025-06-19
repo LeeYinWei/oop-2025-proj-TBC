@@ -242,7 +242,7 @@ class Cat:
             rotated_image = pygame.transform.rotate(current_frame, -self.kb_rotation)
             rect = rotated_image.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
             screen.blit(rotated_image, rect.topleft)
-        self.draw_hp_bar(screen)
+        #self.draw_hp_bar(screen)
         # 繪製煙霧特效
         for smoke in self.smoke_effects:
             smoke.draw(screen)
