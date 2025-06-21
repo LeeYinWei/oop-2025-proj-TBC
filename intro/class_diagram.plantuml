@@ -1,243 +1,158 @@
 @startuml
-left to right direction
-skinparam linetype ortho
-skinparam packageStyle rectangle
-skinparam classAttributeIconSize 0
-skinparam classFontSize 12
-skinparam classAttributeFontSize 11
-
-package "Project" {
-    class Main {
-        --
-        +main()
-    }
-    class Game {
-        +game_state: str
-        +status: str
-        +selected_level: int
-        +completed_levels: set
-        +current_budget: int
-        +current_bgm_path: str
-        +boss_music_active: bool
-        +boss_shockwave_played: bool
-        --
-        +run()
-    }
-    package "Class1" {
-        class Level {
-        +enemy_types: list
-        +enemy_configs: dict
-        +spawned_counts: dict
-        +last_spawn_times: dict
-        +our_tower: Tower
-        +enemy_tower: Tower
-        --
-        +check_all_limited_spawned(): bool
-    }
-    }
-    
-
-    
-package "Class2" {
-    together {
-        class Tower {
-        +x, y, width, height: float
-        +hp, max_hp: int
-        +is_enemy: bool
-        +image
-        +shake_start_time, shake_duration: int
-        +is_shaking: bool
-        +collapsing_start_time: int
-        +collapsing_magnitude: int
-        +smoke_effects: list<SmokeEffect>
-        +physic_effects: list<PhysicEffect>
-        +electric_effects: list<ElectricEffect>
-        +gas_effects: list<GasEffect>
-        +csmoke_effects: list<CSmokeEffect>
-        --
-        +draw(screen)
-        +draw_hp_bar(screen)
-        +take_damage(dmg, type)
-        +get_rect(): Rect
-        +update_smoke_effects()
-        +update_physic_effects()
-        +update_electric_effects()
-        +update_gas_effects()
-        +draw_collapse(screen)
-    }
-        class Cat {
-            +x, y, y0: float
-            +width, height: float
-            +hp, max_hp: int
-            +atk: int
-            +speed: float
-            +attack_range: int
-            +attack_interval: int
-            +attack_type: str
-            +is_aoe: bool
-            +is_attacking: bool
-            +done_attack: bool
-            +slot_index: int
-            +kb_limit, kb_count: int
-            +kb_threshold: float
-            +kb_animation: bool
-            +has_retreated: bool
-            +anim_state: str
-            +anim_progress: float
-            +anim_frames: dict
-            +frame_durations: dict
-            +smoke_effects: list<SmokeEffect>
-            +physic_effects: list<PhysicEffect>
-            +electric_effects: list<ElectricEffect>
-            +gas_effects: list<GasEffect>
-            +target_attributes: list
-            +immunities: dict
-            +boosts: dict
-            +status_effects: dict
-            --
-            +move()
-            +knock_back()
-            +start_retreat(distance)
-            +take_damage(dmg, type)
-            +update_animation()
-            +get_current_frame()
-            +draw(screen)
-            +draw_hp_bar(screen)
-            +get_attack_zone(): Rect
-            +get_rect(): Rect
-        }
-
-        class Enemy {
-            +x, y, y0: float
-            +width, height: int
-            +hp, max_hp: int
-            +atk: float
-            +speed: float
-            +attack_range: int
-            +attack_interval: int
-            +attack_type: str
-            +is_aoe: bool
-            +is_boss: bool
-            +is_b: bool
-            +reward: int
-            +kb_limit, kb_count: int
-            +kb_threshold: float
-            +kb_animation: bool
-            +anim_state: str
-            +anim_progress: float
-            +anim_start_time: int
-            +anim_frames: dict
-            +frame_durations: dict
-            +smoke_effects: list<SmokeEffect>
-            +physic_effects: list<PhysicEffect>
-            +electric_effects: list<ElectricEffect>
-            +gas_effects: list<GasEffect>
-            +status_effects: dict
-            +status_effects_config: dict
-            +last_attack_time: int
-            +is_attacking: bool
-            +done_attack: bool
-            +slot_index: int
-            --
-            +move()
-            +knock_back()
-            +take_damage(dmg, type)
-            +update_animation()
-            +get_current_frame()
-            +draw(screen)
-            +draw_hp_bar(screen)
-            +get_attack_zone(): Rect
-            +get_rect(): Rect
-        }
-    }
-}
-package "Class3" {
-    package "Effects" {
-    class SmokeEffect {
-        +update(): bool
-        +draw(screen)
-    }
-    class CSmokeEffect {
-        +update(): bool
-        +draw(screen)
-    }
-    class PhysicEffect {
-        +update(): bool
-        +draw(screen)
-    }
-    class ElectricEffect {
-        +update(): bool
-        +draw(screen)
-    }
-    class GasEffect {
-        +update(): bool
-        +draw(screen)
-    }
+class Cat {
+  -x: float
+  -y: float
+  -type: str
+  -speed: float
+  -width: int
+  -height: int
+  -is_attacking: bool
+  -anim_state: str
+  -anim_start_time: int
+  -has_retreated: bool
+  -retreat_distance: float
+  -retreat_direction: int
+  -slot_index: int
+  +start_retreat(distance: float)
+  +update(now: int)
+  +draw(screen)
+  +get_rect()
+  +update_status_effects(current_time: int)
+  +get_attack_zone()
+  +move()
 }
 
-package "Other Entities" {
-    class Soul {
-        +update(): bool
-        +draw(screen)
-    }
-
-    class Shockwave {
-        +draw(screen)
-    }
-}
-}
-
-
-package "UI Rendering" {
-    class UI {
-        +render_intro()
-        +render_playing()
-        +render_ending()
-        +render_end()
-        +render_pause()
-        +render_level_selection()
-    }
-
-    note right of UI
-    State "intro" → render_intro()\n
-    State "playing" → render_playing()\n
-    State "ending" → render_ending()\n
-    State "end" → render_end()\n
-    State "paused" → render_pause()\n
-    State "level_selection" → render_level_selection()
-    end note
-}
-    package loaders {
-    class ConfigLoader {
-        +load_config()
-    }
-
-    class ImageLoader {
-        +load_images()
-    }
+class Enemy {
+  -x: float
+  -y: float
+  -is_boss: bool
+  -has_spawn_shockwave: bool
+  -hp: float
+  -speed: float
+  -atk: float
+  -width: int
+  -height: int
+  -slot_index: int
+  +update_status_effects(current_time: int)
+  +draw(screen)
+  +get_rect()
+  +get_attack_zone()
+  +move()
+  +take_damage(damage: float)
+  +knock_back()
 }
 
-
+class Tower {
+  -y: int
+  -width: int
+  -height: int
+  -hp: float
+  -max_hp: float
+  -contact_points: list
+  +draw(screen)
+  +get_rect()
+  +take_damage(damage: float)
 }
 
+class ShockwaveEffect {
+  -x: float
+  -y: float
+  -max_radius: float
+  -duration: int
+  -start_time: int
+  +update(now: int) : bool
+  +draw(screen)
+  +get_affected_area() : pygame.Rect
+}
 
+class Soul {
+  -x: float
+  -y: float
+  +update() : bool
+  +draw(screen)
+}
 
+class YManager {
+  -base_y: int
+  -min_y: int
+  -max_slots: int
+  -occupied_slots: list
+  +get_available_y() : tuple[int, int]
+  +release_y(slot_index: int)
+}
 
+class Level {
+  -name: str
+  -enemy_types: list[dict]
+  -spawn_interval: int
+  -survival_time: int
+  -background_path: str
+  -our_tower: Tower
+  -enemy_tower: Tower
+  -tower_distance: int
+  -spawned_counts: dict
+  -last_spawn_times: dict
+  -all_limited_spawned: bool
+  -enemy_configs: dict
+  +reset_towers()
+  +check_all_limited_spawned() : bool
+}
 
-'=============================
-' Relations
-'=============================
-Game --> Class1 : uses
-Class1 --> Class2 : manages
+class GameLoop {
+  -screen: pygame.Surface
+  -clock: pygame.time.Clock
+  -game_state: str
+  -selected_level: int
+  -selected_cats: list[str]
+  -completed_levels: set
+  -cats: list[Cat]
+  -enemies: list[Enemy]
+  -souls: list[Soul]
+  -shockwave_effects: list[ShockwaveEffect]
+  -our_tower: Tower
+  -enemy_tower: Tower
+  -last_spawn_time: dict
+  -last_budget_increase_time: int
+  -total_budget_limitation: int
+  -current_budget: int
+  -budget_rate: int
+  -status: str
+  -level_start_time: int
+  -cat_y_manager: YManager
+  -enemy_y_manager: YManager
+  -cat_key_map: dict
+  -button_rects: dict
+  -intro_start_time: int
+  -intro_duration: int
+  -fade_in_duration: int
+  -y_offset: int
+  -current_fade_alpha: int
+  +main_game_loop() : None
+}
 
-Main --> Game : calls
+class UI {
+  +load_level_selection_background_image(screen_width: int, screen_height: int) : pygame.Surface
+  +draw_level_selection(screen, levels, selected_level, selected_cats, font, completed_levels) : tuple
+  +draw_game_ui(screen, current_level, current_budget, enemy_tower, current_time, level_start_time, selected_cats, last_spawn_time, button_rects, font, cat_key_map) : pygame.Rect
+  +draw_pause_menu(screen, font) : tuple
+  +draw_end_screen(screen, current_level, status, end_font, font, show_mission_complete: bool)
+  +load_intro_background_image(screen_width: int, screen_height: int) : pygame.Surface
+  +draw_intro_screen(screen, font, y_offset, fade_alpha) : pygame.Rect
+  +wrap_text(text: str, font, max_width: int) : list[str]
+  +draw_ending_animation(screen, font, y_offset, fade_alpha)
+}
 
-Game --> UI : uses
-
-loaders --> Class2 : provide data
-loaders --> Class1 : provide data
-
-Class2 --> Class3 : creates
-
+GameLoop o--> Cat
+GameLoop o--> Enemy
+GameLoop o--> Tower
+GameLoop o--> ShockwaveEffect
+GameLoop o--> Soul
+GameLoop o--> YManager
+GameLoop o--> Level
+GameLoop ..> update_battle : uses
+UI ..> GameLoop : renders
+Level o--> Tower : composition
+YManager o--> Cat : manages
+YManager o--> Enemy : manages
 
 @enduml
