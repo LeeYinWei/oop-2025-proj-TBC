@@ -27,7 +27,7 @@ def draw_end_screen(screen, current_level, status, end_font, font, our_tower, en
     # 背景
     screen.blit(current_level.background, (0, 0))
 
-    # 時間差，用於動畫進度（最大1秒內完成）
+    # 時間差，用於動畫進度（最大1.5秒內完成）
     elapsed = pygame.time.get_ticks() - start_time
     scale_progress = min(1.0, elapsed / 1500.0)  # 0~1 之間
 
@@ -42,15 +42,26 @@ def draw_end_screen(screen, current_level, status, end_font, font, our_tower, en
     if status == "victory":
         enemy_tower.draw_collapse(screen)
         text_surface = animated_font.render("Victory!", True, (0, 255, 100))
-        text_rect = text_surface.get_rect(center=(640, 300))  # 螢幕中央
+        text_rect = text_surface.get_rect(center=(screen.get_width() // 2, 300))  # 螢幕中央水平對齊
         screen.blit(text_surface, text_rect)
         if scale_progress == 1.0:
-            screen.blit(font.render("Press Enter to continue", True, (0, 0, 0)), (460, 400))
+            # 將 Continue 按鈕移動到螢幕中間
+            continue_rect = pygame.Rect(screen.get_width() // 2 - 175, screen.get_height() // 2 + 100, 350, 50)  # 中心點減去寬度一半
+            pygame.draw.rect(screen, (0, 255, 0), continue_rect)  # 綠色按鈕
+            screen.blit(font.render("Press enter or click to Continue", True, (0, 0, 0)), 
+                       (continue_rect.x + 10, continue_rect.y + 10))
 
     elif status == "lose":
         our_tower.draw_collapse(screen)
         text_surface = animated_font.render("Defeat!", True, (255, 100, 100))
-        text_rect = text_surface.get_rect(center=(640, 300))
+        text_rect = text_surface.get_rect(center=(screen.get_width() // 2, 300))  # 螢幕中央水平對齊
         screen.blit(text_surface, text_rect)
         if scale_progress == 1.0:
-            screen.blit(font.render("Press any key to return to level selection", True, (0, 0, 0)), (460, 400))
+            # 將 Continue 按鈕移動到螢幕中間
+            continue_rect = pygame.Rect(screen.get_width() // 2 - 175, screen.get_height() // 2 + 100, 350, 50)  # 中心點減去寬度一半
+            pygame.draw.rect(screen, (0, 255, 0), continue_rect)  # 綠色按鈕
+            screen.blit(font.render("Press enter or click to Continue", True, (0, 0, 0)), 
+                       (continue_rect.x + 10, continue_rect.y + 10))
+
+    # 返回 Continue 按鈕矩形
+    return continue_rect if scale_progress == 1.0 else None
